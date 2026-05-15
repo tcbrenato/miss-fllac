@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOTE MISS FLLAC 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .jef-green { background-color: #06402B; }
+        .text-jef-gold { color: #D4AF37; }
+        .bg-jef-gold { background-color: #D4AF37; }
+        
+        /* Animation Défilante */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
+        .animate-marquee:hover { animation-play-state: paused; }
+
+        /* Scrollbar discrète pour le classement */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans antialiased text-gray-900">
+
+    <header class="jef-green text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="flex justify-between items-center max-w-4xl mx-auto">
+            <h1 class="text-xl font-black text-jef-gold uppercase tracking-tighter italic">MISS FLLAC</h1>
+            <div class="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full border border-white/10">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Live Ranking</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="bg-yellow-400 border-b border-yellow-500 py-1.5 overflow-hidden">
+        <div class="animate-marquee font-black text-[11px] uppercase tracking-wider text-black">
+            ⚡ INFO FLASH : 1. Choisissez votre candidate — 2. Payez 100F/vote via le code USSD ci-dessous — 3. Faites une capture d'écran nette — 4. Soumettez votre preuve pour validation ! — REJOIGNEZ L'AVENTURE MISS FLLAC 2026 ! ⚡
+        </div>
+    </div>
+
+    <main class="max-w-md mx-auto p-4 space-y-6 lg:max-w-6xl lg:grid lg:grid-cols-12 lg:gap-8 lg:space-y-0 lg:mt-6">
+        
+        <section class="lg:col-span-4 lg:order-3">
+            <div class="bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border-b-4 border-jef-gold h-full">
+                <div class="p-5">
+                    <h2 class="text-lg font-black text-jef-gold flex items-center gap-2 mb-4 italic">
+                        🏆 TOP 11 - SCORES
+                    </h2>
+                    <div id="rankingList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <p class="text-gray-500 text-[10px] text-center italic py-4">Synchronisation des votes...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-4 lg:order-1">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-white sticky top-24">
+                <div class="aspect-[4/5] bg-gray-200 relative">
+                    <img id="candidateImg" src="https://via.placeholder.com/400x500?text=VOTRE+CHOIX" class="w-full h-full object-cover">
+                    <div class="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent text-white">
+                        <h3 id="previewName" class="text-xl font-bold italic leading-none">Candidate</h3>
+                        <p id="previewDept" class="text-[10px] text-jef-gold font-black uppercase mt-1 tracking-widest">Département</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-4 lg:order-2">
+            <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+                <h2 class="text-lg font-black mb-6 text-gray-800 border-l-4 border-green-900 pl-3 uppercase italic leading-none">Passer au Vote</h2>
+                
+                <form id="voteForm" class="space-y-5">
+                    <div>
+                        <select id="candidateSelect" class="w-full p-4 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:border-green-800 outline-none text-sm font-bold appearance-none cursor-pointer shadow-sm" required>
+                            <option value="" data-name="-" data-dept="-">-- CHOISIR UNE CANDIDATE --</option>
+                            <option value="1" data-dept="Anglais" data-name="LAWSON Thalia">01 - LAWSON Thalia</option>
+                            <option value="2" data-dept="DSLC" data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella</option>
+                            <option value="3" data-dept="Anglais" data-name="GBOYOU Oriane">03 - GBOYOU Oriane</option>
+                            <option value="4" data-dept="Anglais" data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos</option>
+                            <option value="5" data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine</option>
+                            <option value="6" data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte</option>
+                            <option value="7" data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine</option>
+                            <option value="8" data-dept="Anglais" data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine</option>
+                            <option value="9" data-dept="Espagnol" data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH</option>
+                            <option value="10" data-dept="Lettres Mod." data-name="SOTON Odette">10 - SOTON Odette</option>
+                            <option value="11" data-dept="Lettres Mod." data-name="AGBEGNINOU Marie Josée">11 - AGBEGNINOU Marie Josée</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-4 items-center bg-gray-50 p-4 rounded-2xl border-2 border-gray-100">
+                        <div class="flex-1">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase">Quantité de votes</label>
+                            <input type="number" id="voteCount" min="1" value="1" class="w-full bg-transparent text-xl font-black outline-none">
+                        </div>
+                        <div class="text-right">
+                            <span class="block text-[9px] font-black text-gray-400 uppercase">Total (FCFA)</span>
+                            <span class="text-xl font-black text-green-900"><span id="totalPrice">100</span> F</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-600 p-4 rounded-2xl text-white shadow-lg text-center">
+                        <p class="text-[9px] font-black opacity-80 uppercase mb-1">Code USSD de paiement</p>
+                        <p id="ussdCode" class="font-mono font-bold text-lg select-all tracking-wider">*880*46*0191225602*100#</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-2">Capture de preuve</label>
+                        <input type="file" id="capture" accept="image/*" class="text-xs w-full file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:bg-gray-200 file:text-gray-700 font-bold" required>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full jef-green text-jef-gold font-black py-5 rounded-2xl shadow-xl uppercase tracking-widest text-xs active:scale-95 transition-all">
+                        🚀 Valider mon vote
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Logique habituelle
+        const select = document.getElementById('candidateSelect');
+        const img = document.getElementById('candidateImg');
+        const nameDisp = document.getElementById('previewName');
+        const deptDisp = document.getElementById('previewDept');
+        const voteInp = document.getElementById('voteCount');
+        const priceDisp = document.getElementById('totalPrice');
+        const ussdDisp = document.getElementById('ussdCode');
+
+        select.addEventListener('change', () => {
+            const opt = select.options[select.selectedIndex];
+            if(select.value) {
+                img.src = `./candidates/${select.value}.jpg`;
+                nameDisp.innerText = opt.getAttribute('data-name');
+                deptDisp.innerText = opt.getAttribute('data-dept');
+            }
+        });
+
+        voteInp.addEventListener('input', () => {
+            const amount = Math.max(1, voteInp.value) * 100;
+            priceDisp.innerText = amount;
+            ussdDisp.innerText = `*880*46*0191225602*${amount}#`;
+        });
+
+        async function updateRanking() {
+            try {
+                const res = await fetch('/api/ranking');
+                const data = await res.json();
+                const container = document.getElementById('rankingList');
+                container.innerHTML = '';
+                const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
+
+                if (sorted.length === 0) {
+                    container.innerHTML = '<p class="text-gray-600 text-center text-[10px] uppercase py-8 italic">Aucun vote validé pour le moment</p>';
+                    return;
+                }
+
+                sorted.forEach(([name, count], index) => {
+                    const item = document.createElement('div');
+                    item.className = `flex items-center justify-between p-3 rounded-xl border ${index === 0 ? 'bg-jef-gold/10 border-jef-gold' : 'bg-white/5 border-white/5'}`;
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-black ${index === 0 ? 'text-jef-gold underline' : 'text-gray-500'}">${index + 1}</span>
+                            <span class="text-[10px] text-white font-bold uppercase truncate w-32">${name}</span>
+                        </div>
+                        <span class="text-xs font-black text-jef-gold">${count} votes</span>
+                    `;
+                    container.appendChild(item);
+                });
+            } catch (e) {}
+        }
+
+        document.getElementById('voteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "TRANSFERT EN COURS...";
+            const formData = new FormData();
+            formData.append('candidate', select.options[select.selectedIndex].getAttribute('data-name'));
+            formData.append('voteCount', voteInp.value);
+            formData.append('capture', document.getElementById('capture').files[0]);
+
+            const response = await fetch('/api/voter', { method: 'POST', body: formData });
+            if(response.ok) {
+                alert("✅ Votre vote est bien reçu ! Un administrateur va vérifier votre preuve et valider vos points d'ici quelques minutes.");
+                location.reload();
+            }
+        });
+
+        setInterval(updateRanking, 5000);
+        updateRanking();
+    </script>
+</body>
+</html>
