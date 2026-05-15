@@ -2,99 +2,112 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Espace Validateur - MISS FLLAC</title>
+    <title>Admin - MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-8 font-sans">
+<body class="bg-gray-900 text-white min-h-screen p-4 md:p-8">
     
     <div class="max-w-5xl mx-auto">
-        <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
-            <h1 class="text-3xl font-black text-yellow-500 uppercase tracking-tighter">Validation des Votes</h1>
-            <div class="bg-blue-600 px-4 py-1 rounded-full text-[10px] font-bold animate-pulse">MODE CLOUD CONNECTÉ</div>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <h1 class="text-2xl font-black text-yellow-500 uppercase tracking-tighter">Validation des Votes</h1>
+            <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1 rounded-full uppercase font-bold">Déconnexion</button>
         </div>
 
-        <div class="grid gap-6" id="votesList">
-            <div class="text-center py-20">
-                <p class="text-gray-500 italic animate-bounce">Chargement des votes depuis Supabase...</p>
-            </div>
+        <div class="grid gap-4" id="votesList">
+            <p class="text-center text-gray-500 animate-pulse italic">Chargement des données sécurisées...</p>
         </div>
     </div>
 
     <script>
+        // Gestion du mot de passe
+        let adminPass = sessionStorage.getItem('admin_pass');
+
+        if (!adminPass) {
+            adminPass = prompt("Entrez le code Administrateur :");
+            if (adminPass) {
+                sessionStorage.setItem('admin_pass', adminPass);
+                loadVotes();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_pass');
+            location.reload();
+        }
+
         async function loadVotes() {
             try {
-                const res = await fetch('/api/admin/votes');
-                const votes = await res.json();
-                const container = document.getElementById('votesList');
-                
-                if (!votes || votes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 text-center py-10 italic">Aucun vote enregistré dans la base de données.</p>';
+                const res = await fetch('/api/admin/votes', {
+                    headers: { 'x-admin-password': adminPass }
+                });
+
+                if (res.status === 401) {
+                    alert("Code incorrect !");
+                    sessionStorage.removeItem('admin_pass');
+                    location.reload();
                     return;
                 }
 
+                const votes = await res.json();
+                const container = document.getElementById('votesList');
                 container.innerHTML = '';
 
+                if (votes.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 text-center py-10">Aucun vote en attente.</p>';
+                    return;
+                }
+
                 votes.forEach(v => {
-                    const card = document.createElement('div');
-                    // On gère le style selon le statut
                     const isValide = v.status === 'VALIDE';
-                    card.className = `p-6 rounded-3xl border-2 transition-all duration-500 ${isValide ? 'border-green-500 bg-green-900/10' : 'border-gray-700 bg-gray-800 hover:border-gray-500'} flex items-center justify-between`;
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-2xl border-2 transition-all ${isValide ? 'border-green-500 bg-green-900/10' : 'border-gray-700 bg-gray-800'}`;
                     
-                    // Note : On utilise v.screenshot_url au lieu de /uploads/
                     card.innerHTML = `
-                        <div class="flex items-center gap-6">
-                            <div class="relative group">
-                                <img src="${v.screenshot_url}" 
-                                     class="w-24 h-24 object-cover rounded-2xl cursor-pointer border-2 border-transparent group-hover:border-yellow-500 transition-all" 
-                                     onclick="window.open('${v.screenshot_url}')">
-                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 rounded-2xl pointer-events-none transition-opacity">
-                                    <span class="text-[10px] font-bold">VOIR</span>
+                        <div class="flex flex-col md:flex-row items-center gap-4 justify-between">
+                            <div class="flex items-center gap-4 w-full">
+                                <img src="${v.screenshot_url}" class="w-16 h-16 object-cover rounded-xl cursor-pointer border border-gray-600" onclick="window.open('${v.screenshot_url}')">
+                                <div>
+                                    <h3 class="font-bold text-lg">${v.candidate}</h3>
+                                    <p class="text-yellow-500 font-black">${v.count} votes (${v.count * 100}F)</p>
+                                    <p class="text-[10px] text-gray-500 italic">${new Date(v.created_at).toLocaleString('fr-FR')}</p>
                                 </div>
                             </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white uppercase">${v.candidate}</h3>
-                                <p class="text-yellow-500 font-black text-lg">${v.count * 100} FCFA <span class="text-sm font-normal text-gray-400">(${v.count} votes)</span></p>
-                                <p class="text-[10px] text-gray-500 font-mono mt-1 italic">${new Date(v.created_at || Date.now()).toLocaleString('fr-FR')}</p>
+                            <div class="w-full md:w-auto">
+                                ${!isValide ? 
+                                    `<button onclick="valider('${v.id}')" class="w-full bg-green-600 hover:bg-green-500 px-6 py-2 rounded-xl font-black transition">VALIDER</button>` : 
+                                    `<span class="block text-center text-green-400 font-bold border border-green-400/30 px-4 py-2 rounded-xl">✅ ACCEPTÉ</span>`
+                                }
                             </div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            ${!isValide ? 
-                                `<button onclick="valider('${v.id}')" class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-2xl font-black transition-transform active:scale-95 shadow-lg">VALIDER</button>` : 
-                                `<div class="flex items-center gap-2 text-green-400 bg-green-400/10 px-4 py-2 rounded-xl border border-green-400/20">
-                                    <span class="text-sm font-black">✅ ACCEPTÉ</span>
-                                 </div>`
-                            }
                         </div>
                     `;
                     container.appendChild(card);
                 });
-            } catch (error) {
-                console.error("Erreur de chargement:", error);
+            } catch (err) {
+                console.error("Erreur:", err);
             }
         }
 
         async function valider(id) {
-            // Optionnel : un petit message de confirmation
-            if(!confirm("Valider ce paiement ?")) return;
-
+            if(!confirm("Confirmer ce paiement ?")) return;
             try {
                 const res = await fetch('/api/admin/valider', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-admin-password': adminPass
+                    },
                     body: JSON.stringify({ id })
                 });
-                
-                if(res.ok) {
-                    loadVotes(); // Recharger immédiatement après succès
-                }
+                if(res.ok) loadVotes();
             } catch (err) {
-                alert("Erreur lors de la validation");
+                alert("Erreur réseau");
             }
         }
 
-        // Rafraîchissement automatique toutes les 10 secondes (plus économe pour la DB)
-        setInterval(loadVotes, 10000);
-        loadVotes();
+        if (adminPass) {
+            setInterval(loadVotes, 10000);
+            loadVotes();
+        }
     </script>
 </body>
 </html>
