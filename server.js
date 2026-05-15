@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // --- CONFIGURATION SUPABASE ---
 const SUPABASE_URL = 'https://hfznofaxuokofbhxdfik.supabase.co';
@@ -56,7 +56,7 @@ app.post('/api/voter', upload.single('capture'), async (req, res) => {
     }
 });
 
-// 2. ROUTE : RÉCUPÉRER LE CLASSEMENT (Pour la page de vote)
+// 2. ROUTE : RÉCUPÉRER LE CLASSEMENT
 app.get('/api/ranking', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -107,9 +107,11 @@ app.post('/api/admin/valider', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`-----------------------------------------`);
-    console.log(`🚀 SERVEUR MISS FLLAC CONNECTÉ AU CLOUD`);
-    console.log(`📍 URL : http://localhost:${port}`);
-    console.log(`-----------------------------------------`);
-});
+// --- MODIFICATION POUR VERCEL ---
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(port, () => {
+        console.log(`🚀 SERVEUR MISS FLLAC LANCÉ SUR http://localhost:${port}`);
+    });
+}
+
+module.exports = app; // CRUCIAL POUR VERCEL
