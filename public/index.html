@@ -10,7 +10,6 @@
         .text-jef-gold { color: #D4AF37; }
         .bg-jef-gold { background-color: #D4AF37; }
         
-        /* Animation Défilante */
         @keyframes marquee {
             0% { transform: translateX(100%); }
             100% { transform: translateX(-100%); }
@@ -20,9 +19,6 @@
             white-space: nowrap;
             animation: marquee 25s linear infinite;
         }
-        .animate-marquee:hover { animation-play-state: paused; }
-
-        /* Scrollbar discrète pour le classement */
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
     </style>
@@ -53,8 +49,8 @@
                     <h2 class="text-lg font-black text-jef-gold flex items-center gap-2 mb-4 italic">
                         🏆 TOP 11 - SCORES
                     </h2>
-                    <div id="rankingList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        <p class="text-gray-500 text-[10px] text-center italic py-4">Synchronisation des votes...</p>
+                    <div id="rankingList" class="space-y-2 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                        <p class="text-gray-500 text-[10px] text-center italic py-4">Chargement du classement...</p>
                     </div>
                 </div>
             </div>
@@ -63,7 +59,7 @@
         <section class="lg:col-span-4 lg:order-1">
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-white sticky top-24">
                 <div class="aspect-[4/5] bg-gray-200 relative">
-                    <img id="candidateImg" src="https://via.placeholder.com/400x500?text=VOTRE+CHOIX" class="w-full h-full object-cover">
+                    <img id="candidateImg" src="https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS" class="w-full h-full object-cover transition-opacity duration-300">
                     <div class="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/60 to-transparent text-white">
                         <h3 id="previewName" class="text-xl font-bold italic leading-none">Candidate</h3>
                         <p id="previewDept" class="text-[10px] text-jef-gold font-black uppercase mt-1 tracking-widest">Département</p>
@@ -125,7 +121,6 @@
     </main>
 
     <script>
-        // Logique habituelle
         const select = document.getElementById('candidateSelect');
         const img = document.getElementById('candidateImg');
         const nameDisp = document.getElementById('previewName');
@@ -134,21 +129,29 @@
         const priceDisp = document.getElementById('totalPrice');
         const ussdDisp = document.getElementById('ussdCode');
 
+        // GESTION DU CHANGEMENT DE CANDIDATE
         select.addEventListener('change', () => {
             const opt = select.options[select.selectedIndex];
             if(select.value) {
-                img.src = `./candidates/${select.value}.jpg`;
+                // IL CHERCHE ICI : /candidates/candidate1.jpg, /candidates/candidate2.jpg, etc.
+                img.src = `/candidates/candidate${select.value}.jpg`; 
                 nameDisp.innerText = opt.getAttribute('data-name');
                 deptDisp.innerText = opt.getAttribute('data-dept');
+            } else {
+                img.src = "https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS";
+                nameDisp.innerText = "Candidate";
+                deptDisp.innerText = "Département";
             }
         });
 
+        // CALCUL PRIX
         voteInp.addEventListener('input', () => {
             const amount = Math.max(1, voteInp.value) * 100;
             priceDisp.innerText = amount;
             ussdDisp.innerText = `*880*46*0191225602*${amount}#`;
         });
 
+        // RÉCUPÉRATION DU CLASSEMENT
         async function updateRanking() {
             try {
                 const res = await fetch('/api/ranking');
@@ -158,7 +161,7 @@
                 const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
 
                 if (sorted.length === 0) {
-                    container.innerHTML = '<p class="text-gray-600 text-center text-[10px] uppercase py-8 italic">Aucun vote validé pour le moment</p>';
+                    container.innerHTML = '<p class="text-gray-600 text-center text-[10px] uppercase py-8 italic">Aucun vote validé</p>';
                     return;
                 }
 
@@ -167,8 +170,8 @@
                     item.className = `flex items-center justify-between p-3 rounded-xl border ${index === 0 ? 'bg-jef-gold/10 border-jef-gold' : 'bg-white/5 border-white/5'}`;
                     item.innerHTML = `
                         <div class="flex items-center gap-3">
-                            <span class="text-sm font-black ${index === 0 ? 'text-jef-gold underline' : 'text-gray-500'}">${index + 1}</span>
-                            <span class="text-[10px] text-white font-bold uppercase truncate w-32">${name}</span>
+                            <span class="text-sm font-black ${index === 0 ? 'text-jef-gold' : 'text-gray-500'}">${index + 1}</span>
+                            <span class="text-[10px] text-gray-800 font-bold uppercase truncate w-32">${name}</span>
                         </div>
                         <span class="text-xs font-black text-jef-gold">${count} votes</span>
                     `;
@@ -177,23 +180,35 @@
             } catch (e) {}
         }
 
+        // ENVOI DU FORMULAIRE
         document.getElementById('voteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "TRANSFERT EN COURS...";
+            btn.disabled = true; 
+            btn.innerText = "ENVOI EN COURS...";
+
             const formData = new FormData();
             formData.append('candidate', select.options[select.selectedIndex].getAttribute('data-name'));
             formData.append('voteCount', voteInp.value);
             formData.append('capture', document.getElementById('capture').files[0]);
 
-            const response = await fetch('/api/voter', { method: 'POST', body: formData });
-            if(response.ok) {
-                alert("✅ Votre vote est bien reçu ! Un administrateur va vérifier votre preuve et valider vos points d'ici quelques minutes.");
-                location.reload();
+            try {
+                const response = await fetch('/api/voter', { method: 'POST', body: formData });
+                if(response.ok) {
+                    alert("✅ Vote envoyé avec succès !");
+                    location.reload();
+                } else {
+                    alert("Erreur lors de l'envoi.");
+                    btn.disabled = false;
+                    btn.innerText = "🚀 Valider mon vote";
+                }
+            } catch (err) {
+                alert("Erreur réseau.");
+                btn.disabled = false;
             }
         });
 
-        setInterval(updateRanking, 5000);
+        setInterval(updateRanking, 10000);
         updateRanking();
     </script>
 </body>
