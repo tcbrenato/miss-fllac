@@ -2,111 +2,313 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - MISS FLLAC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANEL DE CONTRÔLE MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 md:p-8">
-    
-    <div class="max-w-5xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <h1 class="text-2xl font-black text-yellow-500 uppercase tracking-tighter">Validation des Votes</h1>
-            <button onclick="logout()" class="text-xs bg-red-600 px-3 py-1 rounded-full uppercase font-bold">Déconnexion</button>
-        </div>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
-        <div class="grid gap-4" id="votesList">
-            <p class="text-center text-gray-500 animate-pulse italic">Chargement des données sécurisées...</p>
+    <div id="loginScreen" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-4">
+            <h1 class="text-xl font-black text-amber-500 uppercase italic">CONNEXION SÉCURISÉE</h1>
+            <input type="password" id="adminPass" placeholder="Saisir le mot de passe" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-center text-white font-mono outline-none focus:border-amber-500">
+            <button onclick="login()" class="w-full bg-amber-500 text-slate-950 font-black py-4 rounded-xl uppercase tracking-wider text-sm active:scale-95 transition-all">Accéder au Panel</button>
         </div>
     </div>
 
-    <script>
-        // Gestion du mot de passe
-        let adminPass = sessionStorage.getItem('admin_pass');
+    <div id="panelScreen" class="hidden min-h-screen flex flex-col">
+        <header class="bg-slate-950 border-b border-slate-800 p-4">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div>
+                    <h1 class="text-lg font-black text-amber-500 tracking-tight uppercase">PANEL GLOBAL — MISS FLLAC</h1>
+                    <p id="roleBadge" class="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded inline-block mt-1">Rôle : -</p>
+                </div>
+                <button onclick="location.reload()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-xs font-bold uppercase">Déconnexion</button>
+            </div>
+        </header>
 
-        if (!adminPass) {
-            adminPass = prompt("Entrez le code Administrateur :");
-            if (adminPass) {
-                sessionStorage.setItem('admin_pass', adminPass);
-                loadVotes();
-            }
-        }
+        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-8 flex-1 w-full">
+            
+            <div id="superAdminSection" class="hidden space-y-6">
+                <div class="border-b border-slate-800 pb-2">
+                    <h2 class="text-xl font-black text-amber-500 uppercase italic">🛠️ CONFIGURATION CANDIDATES (SUPER-ADMIN)</h2>
+                </div>
 
-        function logout() {
-            sessionStorage.removeItem('admin_pass');
-            location.reload();
-        }
-
-        async function loadVotes() {
-            try {
-                const res = await fetch('/api/admin/votes', {
-                    headers: { 'x-admin-password': adminPass }
-                });
-
-                if (res.status === 401) {
-                    alert("Code incorrect !");
-                    sessionStorage.removeItem('admin_pass');
-                    location.reload();
-                    return;
-                }
-
-                const votes = await res.json();
-                const container = document.getElementById('votesList');
-                container.innerHTML = '';
-
-                if (votes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 text-center py-10">Aucun vote en attente.</p>';
-                    return;
-                }
-
-                votes.forEach(v => {
-                    const isValide = v.status === 'VALIDE';
-                    const card = document.createElement('div');
-                    card.className = `p-4 rounded-2xl border-2 transition-all ${isValide ? 'border-green-500 bg-green-900/10' : 'border-gray-700 bg-gray-800'}`;
-                    
-                    card.innerHTML = `
-                        <div class="flex flex-col md:flex-row items-center gap-4 justify-between">
-                            <div class="flex items-center gap-4 w-full">
-                                <img src="${v.screenshot_url}" class="w-16 h-16 object-cover rounded-xl cursor-pointer border border-gray-600" onclick="window.open('${v.screenshot_url}')">
-                                <div>
-                                    <h3 class="font-bold text-lg">${v.candidate}</h3>
-                                    <p class="text-yellow-500 font-black">${v.count} votes (${v.count * 100}F)</p>
-                                    <p class="text-[10px] text-gray-500 italic">${new Date(v.created_at).toLocaleString('fr-FR')}</p>
-                                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md">
+                        <h3 id="formTitle" class="text-sm font-black text-slate-200 uppercase mb-4 border-l-4 border-amber-500 pl-2">Ajouter une Candidate</h3>
+                        <form id="candidateForm" class="space-y-4">
+                            <input type="hidden" id="candId">
+                            <div>
+                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Nom Complet</label>
+                                <input type="text" id="candName" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500" required>
                             </div>
-                            <div class="w-full md:w-auto">
-                                ${!isValide ? 
-                                    `<button onclick="valider('${v.id}')" class="w-full bg-green-600 hover:bg-green-500 px-6 py-2 rounded-xl font-black transition">VALIDER</button>` : 
-                                    `<span class="block text-center text-green-400 font-bold border border-green-400/30 px-4 py-2 rounded-xl">✅ ACCEPTÉ</span>`
-                                }
+                            <div>
+                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Département</label>
+                                <input type="text" id="candDept" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Ajustement Manuel des Votes</label>
+                                <input type="number" id="candVotes" value="0" min="0" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-white outline-none focus:border-amber-500" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Photo d'affiche</label>
+                                <input type="file" id="candPhoto" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-800 file:text-slate-200 font-bold">
+                            </div>
+                            <div class="flex gap-2 pt-2">
+                                <button type="submit" class="flex-1 bg-amber-500 text-slate-950 font-black py-3 rounded-xl text-xs uppercase">Sauvegarder</button>
+                                <button type="button" onclick="clearCandidateForm()" class="bg-slate-800 text-slate-300 font-bold px-4 rounded-xl text-xs uppercase">Annuler</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col max-h-[420px]">
+                        <h3 class="text-sm font-black text-slate-200 uppercase mb-4">Candidates Enregistrées</h3>
+                        <div class="overflow-y-auto flex-1 divide-y divide-slate-800 pr-2" id="candidatesCrudList"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <div class="space-y-4">
+                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md border-l-4 border-emerald-500">
+                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fonds Totaux Collectés</h3>
+                            <p class="text-2xl font-black text-emerald-400 mt-1 font-mono" id="finTotalCash">0 F CFA</p>
+                            <p class="text-[10px] text-slate-500 mt-1" id="finTotalVotes">0 votes validés au total</p>
+                        </div>
+                        
+                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md border-l-4 border-blue-500">
+                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Panier Moyen par Votant</h3>
+                            <p class="text-xl font-black text-blue-400 mt-1 font-mono" id="finAverageCash">0 F CFA</p>
+                            <p class="text-[10px] text-slate-500 mt-1">Par transaction validée</p>
+                        </div>
+
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl shadow-md text-center">
+                            <h3 class="text-[10px] font-bold text-slate-500 uppercase">Maintenance Critique</h3>
+                            <button onclick="resetPlatform()" class="w-full mt-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2 rounded-xl text-[11px] uppercase tracking-wider transition-all">⚠️ Reset de la Plateforme</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md col-span-2 flex flex-col">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Graphique des Tendances</h3>
+                        <div class="h-44 flex-1"><canvas id="votesChart"></canvas></div>
+                        
+                        <div class="mt-4 bg-slate-900 border border-slate-800 p-3 rounded-xl">
+                            <h3 class="text-[9px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Live Logs
+                            </h3>
+                            <div id="logsContainer" class="space-y-1 h-16 overflow-y-auto font-mono text-[10px] text-slate-400 custom-scrollbar">
+                                <p class="text-slate-600 italic">Aucune action enregistrée...</p>
                             </div>
                         </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                console.error("Erreur:", err);
+                    </div>
+
+                </div>
+
+            <section class="bg-slate-950 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center flex-wrap gap-2">
+                    <h2 class="text-base font-black uppercase text-slate-200">Demandes de vote en attente</h2>
+                    <span id="pendingCount" class="bg-amber-500/10 text-amber-500 text-xs font-black px-3 py-1 rounded-full border border-amber-500/20">0 En attente</span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 border-b border-slate-800 text-[10px] text-slate-400 uppercase font-black tracking-wider">
+                                <th class="p-4">Candidate</th>
+                                <th class="p-4">Votes</th>
+                                <th class="p-4">Payeur / Téléphone</th>
+                                <th class="p-4">ID Déclaré</th>
+                                <th class="p-4 text-blue-400">ID Contrôle Réel</th>
+                                <th class="p-4">Preuve</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="votesTableBody" class="divide-y divide-slate-800 text-xs"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let currentRole = "";
+        let votesData = [];
+        let candidatesList = [];
+        let chartInstance = null;
+
+        function login() {
+            const pass = document.getElementById('adminPass').value.trim();
+            if (pass === "VOTEGESTION") { 
+                currentRole = "super-admin";
+                document.getElementById('roleBadge').innerText = "Rôle : Super-Admin (Contrôle Total)";
+                document.getElementById('roleBadge').className = "text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded inline-block mt-1";
+                document.getElementById('superAdminSection').classList.remove('hidden');
+            } else if (pass === "MISS2026FLLAC") {
+                currentRole = "gestionnaire";
+                document.getElementById('roleBadge').innerText = "Rôle : Gestionnaire de Validation";
+                document.getElementById('roleBadge').className = "text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded inline-block mt-1";
+            } else {
+                alert("Mot de passe incorrect.");
+                return;
             }
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('panelScreen').classList.remove('hidden');
+            loadDashboard();
         }
 
-        async function valider(id) {
-            if(!confirm("Confirmer ce paiement ?")) return;
+        async function loadDashboard() {
             try {
-                const res = await fetch('/api/admin/valider', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-admin-password': adminPass
-                    },
-                    body: JSON.stringify({ id })
-                });
-                if(res.ok) loadVotes();
-            } catch (err) {
-                alert("Erreur réseau");
+                const resVotes = await fetch('/api/admin-list');
+                votesData = await resVotes.json();
+                const resCand = await fetch('/api/candidates-list'); 
+                candidatesList = await resCand.json();
+                const resLogs = await fetch('/api/admin-logs');
+                const logsData = await resLogs.json();
+
+                renderVotesTable();
+                if(currentRole === "super-admin") {
+                    renderCandidatesCrud();
+                    buildChart();
+                    renderLogs(logsData);
+                    calculateFinance(); // NOUVEAU : Appel du calculateur financier
+                }
+            } catch (e) { console.log("Erreur de rafraîchissement."); }
+        }
+
+        // NOUVELLE FONCTION : CALCULATEUR FINANCIER EXCLUSIF
+        function calculateFinance() {
+            // On ne filtre que les requêtes validées par l'équipe
+            const validatedRequests = votesData.filter(v => v.status === 'validated');
+            
+            // Calcul du nombre total de votes validés
+            const totalVotes = validatedRequests.reduce((sum, v) => sum + (v.voteCount || 0), 0);
+            
+            // Chaque vote vaut 100 F CFA
+            const totalCash = totalVotes * 100;
+            
+            // Calcul du panier moyen (Somme totale / Nombre de transactions validées)
+            const averageCash = validatedRequests.length > 0 ? Math.round(totalCash / validatedRequests.length) : 0;
+
+            // Injection dynamique dans l'interface avec formatage propre
+            document.getElementById('finTotalCash').innerText = `${totalCash.toLocaleString('fr-FR')} F CFA`;
+            document.getElementById('finTotalVotes').innerText = `${totalVotes} vote(s) validé(s) au total`;
+            document.getElementById('finAverageCash').innerText = `${averageCash.toLocaleString('fr-FR')} F CFA`;
+        }
+
+        function renderCandidatesCrud() {
+            const container = document.getElementById('candidatesCrudList');
+            container.innerHTML = candidatesList.map(c => `
+                <div class="flex items-center justify-between py-2 border-b border-slate-800/60">
+                    <div>
+                        <p class="font-bold text-xs uppercase">${c.name}</p>
+                        <p class="text-[10px] text-slate-500 uppercase">${c.id} - ${c.dept}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-black text-amber-500">${c.votes || 0} pts</span>
+                        <button onclick="editCandidate('${c.id}', '${escape(c.name)}', '${escape(c.dept)}', ${c.votes})" class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Modifier</button>
+                        <button onclick="deleteCandidate('${c.id}')" class="bg-red-600/20 text-red-400 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Suppr</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editCandidate(id, name, dept, votes) {
+            document.getElementById('formTitle').innerText = "Modifier la Candidate";
+            document.getElementById('candId').value = id;
+            document.getElementById('candName').value = unescape(name);
+            document.getElementById('candDept').value = unescape(dept);
+            document.getElementById('candVotes').value = votes;
+        }
+
+        function clearCandidateForm() {
+            document.getElementById('formTitle').innerText = "Ajouter une Candidate";
+            document.getElementById('candidateForm').reset();
+            document.getElementById('candId').value = "";
+        }
+
+        document.getElementById('candidateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('id', document.getElementById('candId').value);
+            formData.append('name', document.getElementById('candName').value.trim());
+            formData.append('dept', document.getElementById('candDept').value.trim());
+            formData.append('votes', document.getElementById('candVotes').value);
+            const file = document.getElementById('candPhoto').files[0];
+            if(file) formData.append('photo', file);
+
+            const res = await fetch('/api/candidate-save', { method: 'POST', body: formData });
+            if(res.ok) { clearCandidateForm(); loadDashboard(); }
+        });
+
+        async function deleteCandidate(id) {
+            if(confirm("Supprimer cette candidate ?")) {
+                await fetch(`/api/candidate-delete?id=${id}`, { method: 'DELETE' });
+                loadDashboard();
             }
         }
 
-        if (adminPass) {
-            setInterval(loadVotes, 10000);
-            loadVotes();
+        function renderLogs(logs) {
+            const container = document.getElementById('logsContainer');
+            if(logs.length === 0) return;
+            container.innerHTML = logs.map(l => `<div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>`).join('');
+        }
+
+        function renderVotesTable() {
+            const tbody = document.getElementById('votesTableBody');
+            const pending = votesData.filter(v => v.status === 'pending');
+            document.getElementById('pendingCount').innerText = `${pending.length} En attente`;
+            if(pending.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic">Aucun vote.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = pending.map(v => `
+                <tr class="hover:bg-slate-900/40">
+                    <td class="p-4 font-black uppercase text-slate-200">${v.candidate}</td>
+                    <td class="p-4 font-black text-amber-500">${v.voteCount}</td>
+                    <td class="p-4 text-slate-300 font-medium">${v.senderName}<br><span class="text-[10px] text-slate-500">${v.senderPhone}</span></td>
+                    <td class="p-4 font-mono font-black text-blue-400">${v.txRef}</td>
+                    <td class="p-4"><input type="text" id="control-${v.id}" placeholder="ID Réel" class="p-1 bg-slate-950 border border-slate-800 rounded text-xs font-mono font-black text-white outline-none uppercase w-32"></td>
+                    <td class="p-4"><a href="${v.captureUrl}" target="_blank" class="text-amber-500 hover:underline font-bold text-[10px]">Voir ↗</a></td>
+                    <td class="p-4 text-right space-x-2 whitespace-nowrap">
+                        <button onclick="processVote('${v.id}', 'validate')" class="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px] uppercase">Valider</button>
+                        <button onclick="processVote('${v.id}', 'reject')" class="bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-1 rounded text-[10px] uppercase">Rejeter</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function processVote(id, action) {
+            const ctrl = document.getElementById(`control-${id}`);
+            const ref = ctrl ? ctrl.value.toUpperCase().trim() : "";
+            if(action === 'validate' && !ref) { alert("Code de contrôle obligatoire !"); return; }
+            
+            await fetch('/api/admin-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, action, controlRef: ref, role: currentRole })
+            });
+            loadDashboard();
+        }
+
+        async function resetPlatform() {
+            if(confirm("Tout réinitialiser ?") && prompt("Mot de passe :") === "VOTEGESTION") {
+                await fetch('/api/admin-reset', { method: 'POST' });
+                loadDashboard();
+            }
+        }
+
+        function buildChart() {
+            const ctx = document.getElementById('votesChart').getContext('2d');
+            const names = candidatesList.map(c => c.name);
+            const score = candidatesList.map(c => c.votes || 0);
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: names, datasets: [{ label: 'Votes', data: score, backgroundColor: '#D4AF37' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
     </script>
 </body>

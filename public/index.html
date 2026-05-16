@@ -10,29 +10,18 @@
         .text-jef-gold { color: #D4AF37; }
         .bg-jef-gold { background-color: #D4AF37; }
         .border-jef-gold { border-color: #D4AF37; }
-        
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .animate-marquee {
-            display: inline-block;
-            white-space: nowrap;
-            animation: marquee 30s linear infinite;
-        }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 30s linear infinite; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900 selection:bg-emerald-800 selection:text-white">
+<body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900">
 
-    <header class="jef-green text-white p-4 sticky top-0 z-50 shadow-lg backdrop-blur-md bg-opacity-95">
+    <header class="jef-green text-white p-4 sticky top-0 z-50 shadow-lg bg-opacity-95">
         <div class="flex justify-between items-center max-w-6xl mx-auto">
-            <div class="flex items-center gap-3">
-                <span class="text-2xl font-black text-jef-gold tracking-tighter italic uppercase">MISS FLLAC</span>
-                <span class="text-[10px] bg-white/10 text-white px-2 py-0.5 rounded-md font-bold tracking-widest uppercase">2026</span>
-            </div>
-            <div class="flex items-center gap-2 bg-emerald-950/60 px-3 py-1.5 rounded-full border border-white/10 shadow-inner">
+            <h1 class="text-2xl font-black text-jef-gold tracking-tighter italic uppercase">MISS FLLAC 2026</h1>
+            <div class="flex items-center gap-2 bg-emerald-950/60 px-3 py-1.5 rounded-full border border-white/10">
                 <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
                 <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400">Classement Live</span>
             </div>
@@ -41,40 +30,30 @@
 
     <div class="bg-amber-400 border-b border-amber-500 py-2 overflow-hidden shadow-sm">
         <div class="animate-marquee font-bold text-xs uppercase tracking-wide text-amber-950">
-            ⚡ GUIDE DE VOTE : 1️⃣ Sélectionnez votre candidate préférée — 2️⃣ Payez vos votes via le code USSD généré automatiquement — 3️⃣ Soumettez votre capture d'écran nette pour validation immédiate par les commissaires au vote ! ⚡
+            ⚡ GUIDE DE VOTE : 1️⃣ Recherchez et choisissez la candidate — 2️⃣ Payez via USSD — 3️⃣ Remplissez les infos de paiement — 4️⃣ Soumettez ! ⚡
         </div>
     </div>
 
     <main class="max-w-md mx-auto p-4 space-y-6 lg:max-w-7xl lg:grid lg:grid-cols-12 lg:gap-8 lg:space-y-0 lg:py-8">
         
         <section class="lg:col-span-4 lg:order-3">
-            <div class="bg-slate-950 rounded-3xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col h-[550px]">
-                <div class="p-6 bg-gradient-to-b from-slate-900 to-slate-950 border-b border-slate-800">
-                    <h2 class="text-lg font-black text-jef-gold flex items-center gap-2 italic uppercase tracking-wide">
-                        <span>🏆</span> Classement Actuel
-                    </h2>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Mis à jour en temps réel toutes les 20 secondes.</p>
+            <div class="bg-slate-950 rounded-3xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col h-[600px]">
+                <div class="p-6 border-b border-slate-800">
+                    <h2 class="text-lg font-black text-jef-gold flex items-center gap-2 italic uppercase">🏆 Classement Actuel</h2>
                 </div>
-                <div id="rankingList" class="p-4 space-y-3 flex-1 overflow-y-auto custom-scrollbar bg-slate-950">
-                    <div class="flex flex-col items-center justify-center h-full py-12 text-slate-500">
-                        <svg class="animate-spin h-6 w-6 text-jef-gold mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <p class="text-xs uppercase tracking-widest font-bold">Synchronisation en cours...</p>
-                    </div>
-                </div>
+                <div id="rankingList" class="p-4 space-y-3 flex-1 overflow-y-auto custom-scrollbar"></div>
             </div>
         </section>
 
         <section class="lg:col-span-4 lg:order-1">
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 sticky top-28 group">
                 <div class="aspect-[4/5] bg-slate-100 relative overflow-hidden">
-                    <img id="candidateImg" loading="lazy" src="https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-105">
-                    
+                    <img id="candidateImg" loading="lazy" src="https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS" class="w-full h-full object-cover transition-all duration-500">
                     <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                    
-                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white transform transition-transform">
-                        <span class="inline-block bg-jef-gold text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider mb-2 shadow-md">CANDIDATE OFFICIELLE</span>
-                        <h3 id="previewName" class="text-2xl font-black italic tracking-wide uppercase drop-shadow-md">VOTRE CHOIX</h3>
-                        <p id="previewDept" class="text-xs text-jef-gold font-bold uppercase tracking-widest mt-1 opacity-90">Département d'origine</p>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <span class="inline-block bg-jef-gold text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase mb-2">CANDIDATE OFFICIELLE</span>
+                        <h3 id="previewName" class="text-2xl font-black italic uppercase">VOTRE CHOIX</h3>
+                        <p id="previewDept" class="text-xs text-jef-gold font-bold uppercase tracking-widest mt-1">Département</p>
                     </div>
                 </div>
             </div>
@@ -82,84 +61,75 @@
 
         <section class="lg:col-span-4 lg:order-2">
             <div class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100 space-y-6">
-                <div class="border-b border-slate-100 pb-4">
-                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight italic flex items-center gap-2">
-                        <span class="text-emerald-800">🗳️</span> Exprimer Votre Vote
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-1">Soutenez votre candidate en quelques étapes simples.</p>
-                </div>
-                
                 <form id="voteForm" class="space-y-5">
+                    
                     <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Étape 1 : Choisir la candidate</label>
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">1. Choisir la candidate</label>
                         <div class="relative">
-                            <select id="candidateSelect" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/20 outline-none text-sm font-black appearance-none cursor-pointer transition-all shadow-sm text-slate-700" required>
-                                <option value="" data-name="-" data-dept="-">-- APPUYEZ POUR SÉLECTIONNER --</option>
-                                <option value="1" data-dept="Anglais" data-name="LAWSON Thalia">01 - LAWSON Thalia</option>
-                                <option value="2" data-dept="DSLC" data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella</option>
-                                <option value="3" data-dept="Anglais" data-name="GBOYOU Oriane">03 - GBOYOU Oriane</option>
-                                <option value="4" data-dept="Anglais" data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos</option>
-                                <option value="5" data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine</option>
-                                <option value="6" data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte</option>
-                                <option value="7" data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine</option>
-                                <option value="8" data-dept="Anglais" data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine</option>
-                                <option value="9" data-dept="Espagnol" data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH</option>
-                                <option value="10" data-dept="Lettres Mod." data-name="SOTON Odette">10 - SOTON Odette</option>
-                                <option value="11" data-dept="Lettres Mod." data-name="AGBEGNINOU Marie Josée">11 - AGBEGNINOU Marie Josée</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
-                                🔑
-                            </div>
+                            <input type="text" id="searchCandidate" placeholder="🔍 Rechercher par nom ou département..." class="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all">
                         </div>
+                        <select id="candidateSelect" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm text-slate-700 outline-none" required>
+                            <option value="" data-name="-" data-dept="-">-- SÉLECTIONNER --</option>
+                            <option value="1" data-dept="Anglais" data-name="LAWSON Thalia">01 - LAWSON Thalia (Anglais)</option>
+                            <option value="2" data-dept="DSLC" data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella (DSLC)</option>
+                            <option value="3" data-dept="Anglais" data-name="GBOYOU Oriane">03 - GBOYOU Oriane (Anglais)</option>
+                            <option value="4" data-dept="Anglais" data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos (Anglais)</option>
+                            <option value="5" data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine (Lettres Mod.)</option>
+                            <option value="6" data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte (Lettres Mod.)</option>
+                            <option value="7" data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine (Lettres Mod.)</option>
+                            <option value="8" data-dept="Anglais" data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine (Anglais)</option>
+                            <option value="9" data-dept="Espagnol" data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH (Espagnol)</option>
+                            <option value="10" data-dept="Lettres Mod." data-name="SOTON Odette">10 - SOTON Odette (Lettres Mod.)</option>
+                            <option value="11" data-dept="Lettres Mod." data-name="AGBEGNINOU Marie Josée">11 - AGBEGNINOU Marie Josée (Lettres Mod.)</option>
+                        </select>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Étape 2 : Nombre de votes</label>
-                        <div class="flex gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">2. Nombre de votes</label>
+                        <div class="flex gap-4 items-center bg-slate-50 p-3 rounded-2xl border border-slate-200">
                             <div class="flex-1">
-                                <span class="block text-[9px] font-black text-slate-400 uppercase">Quantité</span>
-                                <input type="number" id="voteCount" min="1" value="1" class="w-full bg-transparent text-xl font-black outline-none text-slate-800">
+                                <input type="number" id="voteCount" min="1" value="1" class="w-full bg-transparent text-xl font-black outline-none">
                             </div>
-                            <div class="text-right bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100">
-                                <span class="block text-[9px] font-black text-emerald-700 uppercase">Total Net</span>
-                                <span class="text-xl font-black text-emerald-900"><span id="totalPrice">100</span> FCFA</span>
+                            <div class="text-right bg-emerald-50 px-3 py-1 rounded-xl">
+                                <span class="text-xl font-black text-emerald-900"><span id="totalPrice">100</span> F</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Étape 3 : Code de transaction</label>
-                        <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-4 rounded-2xl text-white shadow-md relative overflow-hidden group">
-                            <div class="relative z-10 flex flex-col items-center">
-                                <p class="text-[9px] font-black opacity-75 uppercase tracking-widest mb-1">Code USSD Mobile Money (Appuyez pour copier)</p>
-                                <div class="flex items-center gap-2 cursor-pointer w-full justify-center bg-black/10 hover:bg-black/20 p-2 rounded-xl transition-all border border-white/5" onclick="copyUSSD()">
-                                    <p id="ussdCode" class="font-mono font-black text-base md:text-lg tracking-wider select-all">*880*46*0191225602*100#</p>
-                                    <span class="text-sm shadow-sm">📋</span>
-                                </div>
-                            </div>
-                            <div class="absolute -right-6 -bottom-6 text-white/5 text-7xl font-black transform rotate-12 pointer-events-none">MOMO</div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">3. Code USSD (Cliquez pour copier)</label>
+                        <div class="bg-blue-600 p-3 rounded-2xl text-white text-center cursor-pointer" onclick="copyUSSD()">
+                            <p id="ussdCode" class="font-mono font-black text-sm tracking-wider">*880*46*0191225602*100#</p>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Étape 4 : Joindre la preuve</label>
-                        <div class="border-2 border-dashed border-slate-200 hover:border-emerald-600 bg-slate-50 rounded-2xl p-4 transition-all relative">
-                            <input type="file" id="capture" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" required>
-                            <div class="text-center space-y-1">
-                                <span class="text-2xl block">📸</span>
-                                <span class="block text-xs font-bold text-slate-600" id="fileStatus">Sélectionner la capture d'écran</span>
-                                <span class="block text-[10px] text-slate-400">Fichier image léger (JPEG, PNG)</span>
-                            </div>
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <label class="text-[11px] font-bold text-slate-600 uppercase block border-b pb-1">4. Informations de paiement</label>
+                        <div>
+                            <input type="text" id="senderName" placeholder="Nom complet du payeur" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        </div>
+                        <div>
+                            <input type="tel" id="senderPhone" placeholder="Numéro de téléphone utilisé" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        </div>
+                        <div>
+                            <input type="text" id="txRef" placeholder="ID / Référence de la transaction" class="w-full p-3 bg-white border border-blue-300 focus:border-blue-500 rounded-xl text-xs font-black uppercase outline-none" required>
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full jef-green text-jef-gold font-black py-4 rounded-2xl shadow-lg uppercase tracking-widest text-xs active:scale-[0.98] hover:shadow-emerald-900/10 transition-all border border-emerald-950">
-                        🚀 Valider mon vote
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">5. Joindre la capture d'écran</label>
+                        <div class="border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl p-3 text-center relative">
+                            <input type="file" id="capture" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                            <span class="text-xs font-bold text-slate-600" id="fileStatus">Sélectionner l'image</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full jef-green text-jef-gold font-black py-4 rounded-2xl uppercase text-xs tracking-widest active:scale-95 transition-all">
+                        🚀 Envoyer mon vote
                     </button>
                 </form>
             </div>
         </section>
-
     </main>
 
     <script>
@@ -172,8 +142,24 @@
         const ussdDisp = document.getElementById('ussdCode');
         const captureInput = document.getElementById('capture');
         const fileStatus = document.getElementById('fileStatus');
+        const searchInput = document.getElementById('searchCandidate');
+        const allOptions = Array.from(select.options);
 
-        // CHANGER L'IMAGE ET LES INFOS AU CHOIX
+        // Barre de recherche fluide
+        searchInput.addEventListener('input', (e) => {
+            const filterText = e.target.value.toLowerCase().trim();
+            select.innerHTML = '';
+            const filteredOptions = allOptions.filter(option => {
+                if (option.value === "") return true;
+                const name = option.getAttribute('data-name').toLowerCase();
+                const dept = option.getAttribute('data-dept').toLowerCase();
+                return name.includes(filterText) || dept.includes(filterText);
+            });
+            filteredOptions.forEach(option => select.appendChild(option));
+            select.selectedIndex = filterText !== '' && filteredOptions.length > 1 ? 1 : 0;
+            select.dispatchEvent(new Event('change'));
+        });
+
         select.addEventListener('change', () => {
             const opt = select.options[select.selectedIndex];
             if(select.value) {
@@ -183,32 +169,25 @@
             } else {
                 img.src = "https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS";
                 nameDisp.innerText = "VOTRE CHOIX";
-                deptDisp.innerText = "Département d'origine";
+                deptDisp.innerText = "Département";
             }
         });
 
-        // NOTIFICATION VISUELLE LORS DE LA SÉLECTION D'UN FICHIER
         captureInput.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) {
-                fileStatus.innerText = "✅ " + e.target.files[0].name.substring(0, 20) + "...";
-                fileStatus.classList.add('text-emerald-700');
-            }
+            if(e.target.files.length > 0) fileStatus.innerText = "✅ Image chargée";
         });
 
-        // CALCUL DE PRIX DYNAMIQUE
         voteInp.addEventListener('input', () => {
             const amount = Math.max(1, voteInp.value) * 100;
             priceDisp.innerText = amount;
             ussdDisp.innerText = `*880*46*0191225602*${amount}#`;
         });
 
-        // FONCTION BONUS : COPIER LE CODE USSD AUTOMATIQUEMENT
         function copyUSSD() {
             navigator.clipboard.writeText(ussdDisp.innerText);
-            alert("📋 Code USSD copié ! Collez-le dans votre application d'appel pour payer.");
+            alert("Code USSD copié !");
         }
 
-        // SYNCHRONISATION DU CLASSEMENT LIVE ACCÉLÉRÉE SANS LAGS
         async function updateRanking() {
             try {
                 const res = await fetch('/api/ranking');
@@ -218,69 +197,55 @@
                 const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
 
                 if (sorted.length === 0) {
-                    container.innerHTML = '<div class="flex items-center justify-center h-full py-12 text-slate-500 italic text-xs uppercase font-bold tracking-wider">Aucun vote validé pour le moment</div>';
+                    container.innerHTML = '<p class="text-slate-500 text-center text-xs py-8">Aucun vote validé</p>';
                     return;
                 }
 
                 sorted.forEach(([name, count], index) => {
                     const item = document.createElement('div');
-                    
-                    let rowBg = "bg-slate-900/50 border-slate-800/60";
-                    let rankColor = "text-slate-400";
-                    
-                    if (index === 0) {
-                        rowBg = "bg-gradient-to-r from-amber-950/40 to-slate-900 border-amber-500/30";
-                        rankColor = "text-jef-gold font-black scale-110";
-                    } else if (index === 1) {
-                        rankColor = "text-slate-300 font-bold";
-                    } else if (index === 2) {
-                        rankColor = "text-amber-600 font-bold";
-                    }
-
-                    item.className = `flex items-center justify-between p-3.5 rounded-2xl border ${rowBg} transition-all hover:bg-slate-900`;
+                    item.className = `flex items-center justify-between p-3 rounded-xl bg-slate-900 border ${index === 0 ? 'border-amber-500' : 'border-slate-800'}`;
                     item.innerHTML = `
-                        <div class="flex items-center gap-3 truncate flex-1 mr-2">
-                            <span class="text-xs w-5 text-center ${rankColor}">${index + 1}</span>
-                            <span class="text-xs text-slate-100 font-bold uppercase tracking-wide truncate">${name}</span>
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="text-xs ${index === 0 ? 'text-jef-gold' : 'text-slate-500'}">${index + 1}</span>
+                            <span class="text-xs text-slate-100 font-bold uppercase truncate">${name}</span>
                         </div>
-                        <span class="text-xs font-black text-jef-gold bg-jef-gold/5 border border-jef-gold/10 px-2.5 py-1 rounded-xl shadow-inner whitespace-nowrap">${count} <span class="text-[9px] font-normal text-slate-400">pts</span></span>
+                        <span class="text-xs font-black text-jef-gold">${count} pts</span>
                     `;
                     container.appendChild(item);
                 });
-            } catch (e) { console.log('Échec de la récupération du classement.'); }
+            } catch (e) {}
         }
 
-        // FORMULAIRE SUBMIT
         document.getElementById('voteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; 
-            btn.innerText = "🔒 ENVOI SÉCURISÉ EN COURS...";
+            btn.disabled = true; btn.innerText = "ENVOI EN COURS...";
 
             const formData = new FormData();
             formData.append('candidate', select.options[select.selectedIndex].getAttribute('data-name'));
             formData.append('voteCount', voteInp.value);
+            formData.append('senderName', document.getElementById('senderName').value);
+            formData.append('senderPhone', document.getElementById('senderPhone').value);
+            formData.append('txRef', document.getElementById('txRef').value.toUpperCase().trim());
             formData.append('capture', captureInput.files[0]);
 
             try {
                 const response = await fetch('/api/voter', { method: 'POST', body: formData });
                 if(response.ok) {
-                    alert("✅ Votre demande a bien été transmise aux administrateurs. Vos points s'afficheront après validation !");
+                    alert("✅ Vote transmis ! En attente de validation par le gestionnaire.");
                     location.reload();
                 } else {
-                    alert("⚠️ Une erreur est survenue lors du transfert. Réessayez.");
-                    btn.disabled = false;
-                    btn.innerText = "🚀 Valider mon vote";
+                    const errData = await response.json();
+                    alert("⚠️ " + (errData.error || "Erreur lors de l'envoi."));
+                    btn.disabled = false; btn.innerText = "🚀 Envoyer mon vote";
                 }
             } catch (err) {
-                alert("❌ Erreur de connexion au serveur.");
+                alert("Erreur réseau.");
                 btn.disabled = false;
-                btn.innerText = "🚀 Valider mon vote";
             }
         });
 
-        // ÉCONOMIE DE BANDE PASSANTE : Rafraîchissement intelligent toutes les 20 secondes
-        setInterval(updateRanking, 20000);
+        setInterval(updateRanking, 15000);
         updateRanking();
     </script>
 </body>
