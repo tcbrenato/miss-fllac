@@ -190,7 +190,7 @@
 
         async function updateRanking() {
             try {
-                const res = await fetch('/api/ranking');
+                const res = await fetch('https://miss-fllac-backend.onrender.com/api/ranking');
                 const data = await res.json();
                 const container = document.getElementById('rankingList');
                 container.innerHTML = '';
@@ -230,7 +230,7 @@
             formData.append('capture', captureInput.files[0]);
 
             try {
-                const response = await fetch('/api/voter', { method: 'POST', body: formData });
+                const response = await fetch('https://miss-fllac-backend.onrender.com/api/voter', { method: 'POST', body: formData });
                 if(response.ok) {
                     alert("✅ Vote transmis ! En attente de validation par le gestionnaire.");
                     location.reload();
