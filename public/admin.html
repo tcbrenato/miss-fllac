@@ -3,455 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trésorerie — MISS FLLAC</title>
+    <title>PANEL DE CONTRÔLE MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --ink:     #0d1117;
-            --ink-2:   #161b22;
-            --ink-3:   #21262d;
-            --border:  #30363d;
-            --muted:   #484f58;
-            --text:    #e6edf3;
-            --text-2:  #8b949e;
-            --gold:    #d4a843;
-            --gold-2:  #f0c060;
-            --green:   #3fb950;
-            --amber:   #e3b341;
-            --red:     #f85149;
-        }
+        * { font-family: 'Syne', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--ink); color: var(--text); font-family: 'Instrument Sans', sans-serif; min-height: 100vh; }
-        .serif { font-family: 'DM Serif Display', serif; }
-        .mono  { font-family: 'DM Mono', monospace; }
+        .card-glow-green { box-shadow: 0 0 0 1px rgba(16,185,129,0.2), 0 4px 24px rgba(16,185,129,0.06); }
+        .card-glow-amber { box-shadow: 0 0 0 1px rgba(245,158,11,0.2), 0 4px 24px rgba(245,158,11,0.06); }
+        .card-glow-red   { box-shadow: 0 0 0 1px rgba(239,68,68,0.2),  0 4px 24px rgba(239,68,68,0.06); }
+        .card-glow-blue  { box-shadow: 0 0 0 1px rgba(59,130,246,0.2), 0 4px 24px rgba(59,130,246,0.06); }
 
-        /* ── Login ─────────────────────────────────────────────── */
-        #loginScreen {
-            position: fixed; inset: 0; background: var(--ink);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 100; padding: 1rem;
-        }
-        .login-box {
-            width: 100%; max-width: 360px;
-            background: var(--ink-2);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2.5rem 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .login-box::before {
-            content: '';
-            position: absolute;
-            top: -80px; left: 50%; transform: translateX(-50%);
-            width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(212,168,67,0.15) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .login-label {
-            font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-            color: var(--gold); font-weight: 600; text-align: center; display: block;
-            margin-bottom: 0.5rem;
-        }
-        .login-title {
-            font-family: 'DM Serif Display', serif;
-            font-size: 26px; text-align: center; color: var(--text);
-            margin-bottom: 0.25rem;
-        }
-        .login-sub {
-            font-size: 11px; color: var(--text-2); text-align: center;
-            letter-spacing: 0.1em; text-transform: uppercase;
-            margin-bottom: 2rem;
-        }
-        .login-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border), transparent);
-            margin: 0 auto 2rem; width: 80%;
-        }
-        .login-input {
-            width: 100%; padding: 14px 16px;
-            background: var(--ink); border: 1px solid var(--border);
-            border-radius: 10px; color: var(--text);
-            font-family: 'DM Mono', monospace; font-size: 13px;
-            text-align: center; outline: none; letter-spacing: 0.1em;
-            transition: border-color 0.2s;
-        }
-        .login-input:focus { border-color: var(--gold); }
-        .login-input::placeholder { color: var(--muted); letter-spacing: 0.05em; }
-        .login-btn {
-            width: 100%; padding: 14px;
-            background: var(--gold); color: var(--ink);
-            border: none; border-radius: 10px;
-            font-family: 'Instrument Sans', sans-serif;
-            font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
-            text-transform: uppercase; cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            margin-top: 12px;
-        }
-        .login-btn:hover  { background: var(--gold-2); }
-        .login-btn:active { transform: scale(0.98); }
-        .login-error {
-            font-size: 11px; color: var(--red); text-align: center;
-            font-weight: 600; margin-top: 10px; display: none;
-        }
-
-        /* ── Header ─────────────────────────────────────────────── */
-        header {
-            position: sticky; top: 0; z-index: 40;
-            background: rgba(13,17,23,0.92);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            padding: 0.875rem 1.5rem;
-        }
-        .header-inner { max-width: 1200px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-        .header-logo  { display: flex; align-items: center; gap: 12px; }
-        .logo-mark    {
-            width: 34px; height: 34px; border-radius: 8px;
-            background: var(--gold); display: flex; align-items: center; justify-content: center;
-            font-family: 'DM Serif Display', serif; font-size: 14px; color: var(--ink); font-weight: 700;
-        }
-        .header-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
-        .header-sub   { font-size: 9px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 1px; }
-        .tg-badge {
-            background: rgba(212,168,67,0.12);
-            border: 1px solid rgba(212,168,67,0.3);
-            color: var(--gold);
-            font-size: 9px; font-weight: 700;
-            letter-spacing: 0.15em; text-transform: uppercase;
-            padding: 4px 10px; border-radius: 6px;
-        }
-        .header-right { display: flex; align-items: center; gap: 10px; }
-        .refresh-btn {
-            background: var(--ink-3); border: 1px solid var(--border);
-            color: var(--text-2); font-size: 10px; font-weight: 600;
-            letter-spacing: 0.08em; text-transform: uppercase;
-            padding: 6px 12px; border-radius: 8px; cursor: pointer;
-            transition: all 0.2s; font-family: inherit;
-        }
-        .refresh-btn:hover { border-color: var(--gold); color: var(--gold); }
-        .live-dot { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2); font-family: 'DM Mono', monospace; }
-        .dot-green { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 2s infinite; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-        /* ── Main layout ─────────────────────────────────────────── */
-        main { max-width: 1200px; margin: auto; padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2.5rem; }
-
-        /* ── Section label ───────────────────────────────────────── */
-        .section-label {
-            display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;
-        }
-        .section-label::before {
-            content: ''; width: 3px; height: 16px;
-            background: var(--gold); border-radius: 2px; flex-shrink: 0;
-        }
-        .section-label span {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
-            text-transform: uppercase; color: var(--text-2);
-        }
-
-        /* ── Stat cards ──────────────────────────────────────────── */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-        .stat-card {
-            background: var(--ink-2); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.5rem;
-            transition: border-color 0.2s, transform 0.2s;
-            position: relative; overflow: hidden;
-        }
+        .stat-card { transition: transform 0.2s ease; }
         .stat-card:hover { transform: translateY(-2px); }
-        .stat-card::after {
-            content: ''; position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            border-radius: 14px 14px 0 0;
-        }
-        .stat-card.green::after  { background: var(--green); }
-        .stat-card.amber::after  { background: var(--amber); }
-        .stat-card.gold::after   { background: var(--gold); }
-        .stat-card.red::after    { background: var(--red); }
-        .stat-card:hover.green  { border-color: rgba(63,185,80,0.4); }
-        .stat-card:hover.amber  { border-color: rgba(227,179,65,0.4); }
-        .stat-card:hover.gold   { border-color: rgba(212,168,67,0.4); }
-        .stat-card:hover.red    { border-color: rgba(248,81,73,0.4); }
 
-        .stat-icon  { font-size: 18px; margin-bottom: 12px; }
-        .stat-label { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-2); margin-bottom: 6px; }
-        .stat-value { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1; margin-bottom: 4px; }
-        .stat-value.green { color: var(--green); }
-        .stat-value.amber { color: var(--amber); }
-        .stat-value.gold  { color: var(--gold); }
-        .stat-value.red   { color: var(--red); }
-        .stat-sub   { font-size: 10px; color: var(--text-2); font-family: 'DM Mono', monospace; }
+        .pulse-dot { animation: pulse-anim 2s infinite; }
+        @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-        /* Progress bar */
-        .prog-track { height: 3px; background: var(--ink-3); border-radius: 2px; margin-top: 14px; overflow: hidden; }
-        .prog-fill  { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(.4,0,.2,1); width: 0%; }
-        .prog-fill.green { background: var(--green); }
-        .prog-fill.amber { background: var(--amber); }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
 
-        /* ── Charts row ──────────────────────────────────────────── */
-        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media (max-width: 720px) { .charts-row { grid-template-columns: 1fr; } }
-        .chart-card {
-            background: var(--ink-2); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.5rem;
-        }
-        .chart-title { font-size: 10px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-2); margin-bottom: 1rem; }
-        .chart-wrap  { height: 180px; }
+        #panelScreen { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-        /* ── Grand livre ─────────────────────────────────────────── */
-        .ledger-card {
-            background: var(--ink-2); border: 1px solid var(--border);
-            border-radius: 14px; overflow: hidden;
-        }
-        .ledger-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-        }
-        .ledger-title  { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-        .ledger-count  {
-            font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
-            background: var(--ink-3); border: 1px solid var(--border);
-            padding: 3px 10px; border-radius: 20px; color: var(--text-2);
-        }
+        .vote-row { transition: background 0.15s; }
+        .vote-row:hover { background: rgba(248,197,58,0.03); }
 
-        /* Filters */
-        .filter-bar {
-            padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-        }
-        .filter-btn {
-            font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-            padding: 5px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border);
-            background: transparent; color: var(--text-2); transition: all 0.15s; font-family: inherit;
-        }
-        .filter-btn:hover   { border-color: var(--gold); color: var(--gold); }
-        .filter-btn.active  { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+        .badge-superadmin   { background: linear-gradient(135deg,#D4AF37,#f59e0b); color:#0f172a; }
+        .badge-gestionnaire { background: linear-gradient(135deg,#3b82f6,#6366f1); color:white; }
+        .badge-tg           { background: linear-gradient(135deg,#10b981,#059669); color:white; }
 
-        /* Search */
-        .search-box {
-            margin-left: auto;
-            background: var(--ink); border: 1px solid var(--border);
-            border-radius: 8px; padding: 5px 12px;
-            display: flex; align-items: center; gap: 6px;
+        .tg-badge-status {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:9px; font-weight:700; letter-spacing:.08em;
+            text-transform:uppercase; padding:3px 8px; border-radius:20px;
         }
-        .search-box input {
-            background: none; border: none; outline: none;
-            color: var(--text); font-size: 11px; font-family: 'DM Mono', monospace;
-            width: 160px;
-        }
-        .search-box input::placeholder { color: var(--muted); }
+        .tg-badge-status.validated { background:rgba(16,185,129,.12); color:#10b981; border:1px solid rgba(16,185,129,.2); }
+        .tg-badge-status.pending   { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
+        .tg-badge-status.rejected  { background:rgba(239,68,68,.10);  color:#ef4444; border:1px solid rgba(239,68,68,.2); }
 
-        /* Table */
-        .ledger-table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        thead tr { background: var(--ink); }
-        th {
-            padding: 10px 16px; text-align: left;
-            font-size: 9px; font-weight: 700;
-            letter-spacing: 0.15em; text-transform: uppercase;
-            color: var(--muted); white-space: nowrap;
-        }
-        td { padding: 13px 16px; font-size: 11px; border-top: 1px solid var(--border); }
-        tbody tr { transition: background 0.1s; }
-        tbody tr:hover { background: rgba(255,255,255,0.02); }
-        .td-name   { font-weight: 600; color: var(--text); }
-        .td-amount { font-family: 'DM Mono', monospace; font-weight: 500; }
-        .td-txref  { font-family: 'DM Mono', monospace; color: #79c0ff; font-size: 10px; }
-        .td-phone  { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-2); }
-        .td-cand   { font-weight: 600; font-size: 10px; text-transform: uppercase; }
-
-        /* Status badge */
-        .badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
-            text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
-        }
-        .badge-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-        .badge.validated { background: rgba(63,185,80,0.12);  color: var(--green); border: 1px solid rgba(63,185,80,0.2); }
-        .badge.validated .badge-dot { background: var(--green); }
-        .badge.pending   { background: rgba(227,179,65,0.12); color: var(--amber); border: 1px solid rgba(227,179,65,0.2); }
-        .badge.pending   .badge-dot { background: var(--amber); }
-        .badge.rejected  { background: rgba(248,81,73,0.1);   color: var(--red);   border: 1px solid rgba(248,81,73,0.2); }
-        .badge.rejected  .badge-dot { background: var(--red); }
-
-        /* Empty state */
-        .empty-state { padding: 3rem; text-align: center; color: var(--muted); font-size: 12px; }
-
-        /* Readonly banner */
-        .readonly-banner {
-            background: rgba(212,168,67,0.06);
-            border: 1px solid rgba(212,168,67,0.15);
-            border-radius: 10px; padding: 10px 16px;
-            display: flex; align-items: center; gap: 10px;
-            font-size: 11px; color: var(--text-2);
-        }
-        .readonly-banner strong { color: var(--gold); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-        /* Fade in animation */
-        #panelScreen { animation: fadeUp 0.4s ease both; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-
-        @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .search-box { display: none; }
-            main { padding: 1.25rem 1rem; }
-        }
+        .prog-track { height:3px; background:#1e293b; border-radius:2px; margin-top:12px; overflow:hidden; }
+        .prog-fill  { height:100%; border-radius:2px; transition:width .8s cubic-bezier(.4,0,.2,1); width:0%; }
+        .prog-fill.green { background:#10b981; }
+        .prog-fill.amber { background:#f59e0b; }
     </style>
 </head>
-<body>
+<body class="bg-[#080c14] text-slate-100 min-h-screen antialiased">
 
-<!-- ═══════════════════════════════════════ LOGIN -->
-<div id="loginScreen">
-    <div class="login-box">
-        <span class="login-label">Accès Restreint</span>
-        <h1 class="login-title">Trésorerie</h1>
-        <p class="login-sub">Miss FLLAC — Audit &amp; Contrôle</p>
-        <div class="login-divider"></div>
-        <input
-            type="password"
-            id="tgPass"
-            class="login-input"
-            placeholder="Code d'accès TG"
-            onkeydown="if(event.key==='Enter') login()"
-        >
-        <button class="login-btn" onclick="login()">Accéder au Bureau →</button>
-        <p class="login-error" id="loginError">Code incorrect. Accès refusé.</p>
+<!-- ════════════════════════════════════════════════ LOGIN -->
+<div id="loginScreen" class="fixed inset-0 bg-[#080c14] flex items-center justify-center z-50 p-4">
+    <div class="relative w-full max-w-sm">
+        <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative bg-slate-900/80 border border-slate-800 p-8 rounded-3xl shadow-2xl text-center space-y-5 backdrop-blur-sm">
+            <div class="space-y-1">
+                <p class="text-[10px] tracking-[.3em] text-amber-500/60 uppercase mono">Système Sécurisé</p>
+                <h1 class="text-2xl font-black text-white uppercase tracking-tight">MISS FLLAC</h1>
+                <p class="text-[11px] text-slate-500 uppercase tracking-widest">Panel de Contrôle</p>
+            </div>
+            <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+            <input type="password" id="adminPass" placeholder="Mot de passe d'accès"
+                class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-center text-white mono text-sm outline-none focus:border-amber-500 transition-colors placeholder-slate-600"
+                onkeydown="if(event.key==='Enter') login()">
+            <button onclick="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-2xl uppercase tracking-widest text-sm active:scale-95 transition-all">
+                Accéder →
+            </button>
+            <p id="loginError" class="text-red-400 text-xs font-bold hidden">Mot de passe incorrect.</p>
+        </div>
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════ PANEL -->
-<div id="panelScreen" style="display:none;">
+<!-- ════════════════════════════════════════════════ PANEL -->
+<div id="panelScreen" class="hidden min-h-screen flex flex-col">
 
-    <header>
-        <div class="header-inner">
-            <div class="header-logo">
-                <div class="logo-mark">MF</div>
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-[#080c14]/90 border-b border-slate-800/60 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center font-black text-slate-950 text-xs">MF</div>
                 <div>
-                    <div class="header-title">Miss FLLAC</div>
-                    <div class="header-sub">Bureau de la Trésorerie</div>
+                    <div class="text-sm font-black text-white uppercase tracking-tight">MISS FLLAC</div>
+                    <span id="roleBadge" class="text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5">—</span>
                 </div>
             </div>
-            <div class="header-right">
-                <span class="tg-badge">🔒 Lecture Seule</span>
-                <div class="live-dot">
-                    <span class="dot-green"></span>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mono">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>
                     <span id="lastRefresh">—</span>
                 </div>
-                <button class="refresh-btn" onclick="loadData()">↻ Actualiser</button>
+                <button onclick="loadDashboard()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all">↻ Rafraîchir</button>
+                <button onclick="location.reload()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all">Déconnexion</button>
             </div>
         </div>
     </header>
 
-    <main>
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-8 flex-1 w-full">
 
-        <!-- Bandeau informatif -->
-        <div class="readonly-banner">
-            <span style="font-size:16px;">📋</span>
-            <div>
-                <strong>Mode Audit — Accès en lecture seule</strong><br>
-                Ce tableau de bord est réservé à la supervision financière. Aucune action n'est possible depuis cet espace.
-            </div>
-        </div>
-
-        <!-- ── CHIFFRES CLÉS ── -->
+        <!-- ─────────────────── COMPTEURS FINANCIERS — tous les rôles -->
         <div>
-            <div class="section-label"><span>Chiffres Clés</span></div>
-            <div class="stats-grid">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Tableau de Bord Financier</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                <div class="stat-card green">
-                    <div class="stat-icon">🏦</div>
-                    <div class="stat-label">Fonds Encaissés</div>
-                    <div class="stat-value green mono" id="statValide">0 F</div>
-                    <div class="stat-sub" id="subValide">0 transaction(s) validée(s)</div>
-                    <div class="prog-track"><div class="prog-fill green" id="barValide"></div></div>
+                <div class="stat-card card-glow-green bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fonds Validés</span>
+                        <span class="w-6 h-6 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 text-xs">✓</span>
+                    </div>
+                    <p class="text-2xl font-black text-emerald-400 mono leading-none" id="fondsValides">0 F</p>
+                    <p class="text-[10px] text-slate-600 mt-2" id="countValides">0 transaction(s)</p>
+                    <div class="prog-track"><div class="prog-fill green" id="barValides"></div></div>
                 </div>
 
-                <div class="stat-card amber">
-                    <div class="stat-icon">⏳</div>
-                    <div class="stat-label">Fonds En Attente</div>
-                    <div class="stat-value amber mono" id="statAttente">0 F</div>
-                    <div class="stat-sub" id="subAttente">0 requête(s) en cours</div>
+                <div class="stat-card card-glow-amber bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">En Attente</span>
+                        <span class="w-6 h-6 bg-amber-500/10 rounded-lg flex items-center justify-center text-amber-500 text-xs">⏳</span>
+                    </div>
+                    <p class="text-2xl font-black text-amber-400 mono leading-none" id="fondsAttente">0 F</p>
+                    <p class="text-[10px] text-slate-600 mt-2" id="countAttente">0 requête(s)</p>
                     <div class="prog-track"><div class="prog-fill amber" id="barAttente"></div></div>
                 </div>
 
-                <div class="stat-card gold">
-                    <div class="stat-icon">🗳️</div>
-                    <div class="stat-label">Votes Exprimés</div>
-                    <div class="stat-value gold mono" id="statVotes">0</div>
-                    <div class="stat-sub" id="subVotes">votes validés au total</div>
+                <div class="stat-card card-glow-red bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fraudes Rejetées</span>
+                        <span class="w-6 h-6 bg-red-500/10 rounded-lg flex items-center justify-center text-red-500 text-xs">✗</span>
+                    </div>
+                    <p class="text-2xl font-black text-red-400 mono leading-none" id="totalRejetes">0</p>
+                    <p class="text-[10px] text-slate-600 mt-2">Requête(s) bloquée(s)</p>
                 </div>
 
-                <div class="stat-card red">
-                    <div class="stat-icon">🛑</div>
-                    <div class="stat-label">Fraudes Rejetées</div>
-                    <div class="stat-value red mono" id="statRejets">0</div>
-                    <div class="stat-sub">requête(s) bloquée(s)</div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- ── GRAPHIQUES ── -->
-        <div>
-            <div class="section-label"><span>Analyse Visuelle</span></div>
-            <div class="charts-row">
-
-                <div class="chart-card">
-                    <div class="chart-title">Répartition des Votes par Candidate</div>
-                    <div class="chart-wrap"><canvas id="chartCandidates"></canvas></div>
-                </div>
-
-                <div class="chart-card">
-                    <div class="chart-title">Répartition des Statuts de Paiement</div>
-                    <div class="chart-wrap"><canvas id="chartStatuts"></canvas></div>
+                <!-- Panier moyen : super-admin uniquement, masqué pour les autres -->
+                <div class="stat-card card-glow-blue bg-slate-900 border border-slate-800 p-5 rounded-2xl" id="cardPanierMoyen">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Panier Moyen</span>
+                        <span class="w-6 h-6 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500 text-xs">∅</span>
+                    </div>
+                    <p class="text-2xl font-black text-blue-400 mono leading-none" id="finAverageCash">0 F</p>
+                    <p class="text-[10px] text-slate-600 mt-2">Par transaction validée</p>
                 </div>
 
             </div>
         </div>
 
-        <!-- ── GRAND LIVRE ── -->
-        <div>
-            <div class="section-label"><span>Grand Livre des Transactions</span></div>
-            <div class="ledger-card">
-
-                <div class="ledger-header">
-                    <span class="ledger-title">Historique Complet</span>
-                    <span class="ledger-count mono" id="totalCount">0 entrée(s)</span>
+        <!-- ─────────────────── SUPER-ADMIN UNIQUEMENT -->
+        <div id="superAdminSection" class="hidden space-y-6">
+            <div class="flex items-center gap-2">
+                <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Configuration — Super Admin</h2>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulaire -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                    <h3 id="formTitle" class="text-xs font-black text-white uppercase mb-5 flex items-center gap-2">
+                        <span class="w-1 h-4 bg-amber-500 rounded-full"></span>Ajouter une Candidate
+                    </h3>
+                    <form id="candidateForm" class="space-y-4">
+                        <input type="hidden" id="candId">
+                        <div>
+                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Nom Complet</label>
+                            <input type="text" id="candName" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500 transition-colors" required>
+                        </div>
+                        <div>
+                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Département</label>
+                            <input type="text" id="candDept" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500 transition-colors" required>
+                        </div>
+                        <div>
+                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Ajustement Votes</label>
+                            <input type="number" id="candVotes" value="0" min="0" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-black text-white outline-none focus:border-amber-500 transition-colors mono" required>
+                        </div>
+                        <div>
+                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Photo d'affiche</label>
+                            <input type="file" id="candPhoto" accept="image/*" class="w-full text-[10px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-800 file:text-slate-300 file:font-bold file:text-[10px] file:uppercase cursor-pointer">
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-[11px] uppercase tracking-wider transition-all active:scale-95">Sauvegarder</button>
+                            <button type="button" onclick="clearCandidateForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 rounded-xl text-[11px] uppercase transition-all">Annuler</button>
+                        </div>
+                    </form>
                 </div>
-
-                <div class="filter-bar">
-                    <button class="filter-btn active" onclick="setFilter('all', this)">Tout</button>
-                    <button class="filter-btn" onclick="setFilter('validated', this)">✓ Validés</button>
-                    <button class="filter-btn" onclick="setFilter('pending', this)">⏳ En attente</button>
-                    <button class="filter-btn" onclick="setFilter('rejected', this)">✗ Rejetés</button>
-                    <div class="search-box">
-                        <span style="color:var(--muted); font-size:11px;">⌕</span>
-                        <input type="text" id="searchInput" placeholder="Chercher un nom, ID..." oninput="renderTable()">
+                <!-- Liste candidates -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl lg:col-span-2 flex flex-col max-h-[440px]">
+                    <h3 class="text-xs font-black text-white uppercase mb-4">Candidates Enregistrées</h3>
+                    <div class="overflow-y-auto flex-1 space-y-1 pr-1" id="candidatesCrudList"></div>
+                </div>
+            </div>
+            <!-- Graphique + Logs + Reset -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl md:col-span-2 flex flex-col">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Tendances des Votes</h3>
+                    <div class="flex-1 min-h-[180px]"><canvas id="votesChart"></canvas></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col h-[200px]">
+                        <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>Live Logs
+                        </h3>
+                        <div id="logsContainer" class="flex-1 overflow-y-auto space-y-1 mono text-[9px] text-slate-400">
+                            <p class="text-slate-600 italic">Aucune action...</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-red-500/10 p-5 rounded-2xl text-center">
+                        <p class="text-[9px] text-slate-500 uppercase font-black tracking-wider mb-3">Zone Critique</p>
+                        <button onclick="resetPlatform()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all">
+                            ⚠️ Reset Plateforme
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div class="ledger-table-wrap">
-                    <table>
+        <!-- ─────────────────── TABLEAU VALIDATION — super-admin + gestionnaire -->
+        <div id="validationSection">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Demandes en Attente</h2>
+                </div>
+                <span id="pendingCount" class="bg-amber-500/10 text-amber-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-amber-500/20 mono">0 EN ATTENTE</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
                         <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Expéditeur</th>
-                                <th>Téléphone</th>
-                                <th>Candidate</th>
-                                <th>Montant</th>
-                                <th>Votes</th>
-                                <th>ID Transaction</th>
-                                <th>Statut</th>
+                            <tr class="border-b border-slate-800 text-[9px] text-slate-500 uppercase font-black tracking-widest">
+                                <th class="px-5 py-4">Candidate</th>
+                                <th class="px-5 py-4">Votes</th>
+                                <th class="px-5 py-4">Payeur</th>
+                                <th class="px-5 py-4">ID Déclaré</th>
+                                <th class="px-5 py-4 text-blue-400">ID Contrôle</th>
+                                <th class="px-5 py-4">Preuve</th>
+                                <th class="px-5 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="ledgerBody"></tbody>
+                        <tbody id="votesTableBody" class="divide-y divide-slate-800/60 text-xs"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
 
+        <!-- ─────────────────── GRAND LIVRE TG — lecture seule -->
+        <div id="tgSection" class="hidden space-y-6">
+
+            <div class="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4 flex items-center gap-3">
+                <span class="text-lg">📋</span>
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-wider text-emerald-400">Mode Audit — Lecture Seule</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Supervision financière uniquement. Aucune action possible depuis cet espace.</p>
+                </div>
+            </div>
+
+            <!-- Graphiques TG -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Votes par Candidate</h3>
+                    <div class="h-52"><canvas id="tgChartCandidates"></canvas></div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Répartition des Statuts</h3>
+                    <div class="h-52"><canvas id="tgChartStatuts"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Grand livre -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-5 bg-emerald-500 rounded-full"></div>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Grand Livre des Transactions</h2>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="px-5 py-3 border-b border-slate-800 flex items-center gap-2 flex-wrap">
+                        <button class="tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border transition-all bg-amber-500 border-amber-500 text-slate-950" onclick="setTgFilter('all',this)">Tout</button>
+                        <button class="tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 transition-all" onclick="setTgFilter('validated',this)">✓ Validés</button>
+                        <button class="tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition-all" onclick="setTgFilter('pending',this)">⏳ En attente</button>
+                        <button class="tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-red-500 hover:text-red-400 transition-all" onclick="setTgFilter('rejected',this)">✗ Rejetés</button>
+                        <span class="ml-auto mono text-[10px] text-slate-500" id="tgCount">0 entrée(s)</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-[9px] text-slate-500 uppercase font-black tracking-widest">
+                                    <th class="px-5 py-4">#</th>
+                                    <th class="px-5 py-4">Expéditeur</th>
+                                    <th class="px-5 py-4">Téléphone</th>
+                                    <th class="px-5 py-4">Candidate</th>
+                                    <th class="px-5 py-4">Montant</th>
+                                    <th class="px-5 py-4">Votes</th>
+                                    <th class="px-5 py-4">ID Transaction</th>
+                                    <th class="px-5 py-4">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tgLedgerBody" class="divide-y divide-slate-800/60 text-xs"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -460,199 +310,339 @@
 
 <script>
     const BACKEND_URL = "https://miss-fllac-backend.onrender.com";
-    const TG_PASSWORD = "TRESORERIE2026"; // ← Changer ici si besoin
 
-    let allVotes = [];
+    let currentRole    = "";
+    let votesData      = [];
     let candidatesList = [];
-    let currentFilter = 'all';
-    let chartCand = null;
-    let chartStat = null;
+    let chartInstance  = null;
+    let tgChartCand    = null;
+    let tgChartStat    = null;
+    let tgFilter       = 'all';
 
-    // ═══════════════════ LOGIN
+    // ════════════════════════════════ LOGIN
     function login() {
-        const val = document.getElementById('tgPass').value.trim();
-        const err = document.getElementById('loginError');
-        if (val === TG_PASSWORD) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('panelScreen').style.display = 'block';
-            loadData();
+        const pass = document.getElementById('adminPass').value.trim();
+        const err  = document.getElementById('loginError');
+        err.classList.add('hidden');
+
+        if (pass === "VOTEGESTION") {
+            currentRole = "super-admin";
+            setBadge("Super-Admin", "badge-superadmin");
+            document.getElementById('superAdminSection').classList.remove('hidden');
+            // validationSection visible par défaut, tgSection caché par défaut ✓
+
+        } else if (pass === "MISS2026FLLAC") {
+            currentRole = "gestionnaire";
+            setBadge("Gestionnaire", "badge-gestionnaire");
+            document.getElementById('cardPanierMoyen').classList.add('hidden');
+            // validationSection visible par défaut ✓
+
+        } else if (pass === "TG2026FLLAC") {
+            currentRole = "tg";
+            setBadge("Trésorerie — Audit", "badge-tg");
+            document.getElementById('cardPanierMoyen').classList.add('hidden');
+            document.getElementById('validationSection').classList.add('hidden'); // pas de tableau de validation
+            document.getElementById('tgSection').classList.remove('hidden');      // grand livre à la place
+
         } else {
-            err.style.display = 'block';
-            document.getElementById('tgPass').value = '';
-            document.getElementById('tgPass').focus();
+            err.classList.remove('hidden');
+            return;
         }
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('panelScreen').classList.remove('hidden');
+        loadDashboard();
     }
 
-    // ═══════════════════ CHARGEMENT
-    async function loadData() {
+    function setBadge(label, cls) {
+        const b = document.getElementById('roleBadge');
+        b.innerText = label;
+        b.className = `text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5 ${cls}`;
+    }
+
+    // ════════════════════════════════ CHARGEMENT
+    async function loadDashboard() {
         try {
             const [resVotes, resCand] = await Promise.all([
                 fetch(`${BACKEND_URL}/api/admin-list`),
                 fetch(`${BACKEND_URL}/api/candidates-list`)
             ]);
-            allVotes = await resVotes.json();
+            votesData      = await resVotes.json();
             candidatesList = await resCand.json();
 
-            updateStats();
-            buildCharts();
-            renderTable();
+            // Compteurs financiers : visibles par TOUS
+            calculerIndicateursFinanciers(votesData);
+
+            if (currentRole === "super-admin") {
+                const resLogs  = await fetch(`${BACKEND_URL}/api/admin-logs`);
+                const logsData = await resLogs.json();
+                renderCandidatesCrud();
+                buildChart();
+                renderLogs(logsData);
+                calculatePanierMoyen();
+                renderVotesTable();
+            }
+
+            if (currentRole === "gestionnaire") {
+                renderVotesTable();
+            }
+
+            if (currentRole === "tg") {
+                buildTgCharts();
+                renderTgLedger();
+            }
 
             document.getElementById('lastRefresh').innerText =
-                new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        } catch (e) {
-            console.error("Erreur chargement :", e);
-        }
+                new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+
+        } catch (e) { console.error("Erreur de chargement :", e); }
     }
 
-    // ═══════════════════ STATS
-    function updateStats() {
-        const valides   = allVotes.filter(v => v.status === 'validated');
-        const attente   = allVotes.filter(v => v.status === 'pending');
-        const rejets    = allVotes.filter(v => v.status === 'rejected');
-        const totalVotesVal = valides.reduce((s, v) => s + (parseInt(v.voteCount) || 0), 0);
-        const fondsVal  = valides.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
-        const fondsAtt  = attente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
-        const totalFonds = (fondsVal + fondsAtt) || 1;
+    // ════════════════════════════════ COMPTEURS FINANCIERS (tous les rôles)
+    function calculerIndicateursFinanciers(data) {
+        const valides   = data.filter(v => v.status === 'validated');
+        const enAttente = data.filter(v => v.status === 'pending');
+        const rejetes   = data.filter(v => v.status === 'rejected');
 
-        document.getElementById('statValide').innerText  = fondsVal.toLocaleString('fr-FR') + ' F CFA';
-        document.getElementById('subValide').innerText   = `${valides.length} transaction(s) validée(s)`;
-        document.getElementById('barValide').style.width = Math.round(fondsVal / totalFonds * 100) + '%';
+        const totalValide  = valides.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
+        const totalAttente = enAttente.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
+        const totalGeneral = (totalValide + totalAttente) || 1;
 
-        document.getElementById('statAttente').innerText = fondsAtt.toLocaleString('fr-FR') + ' F CFA';
-        document.getElementById('subAttente').innerText  = `${attente.length} requête(s) en cours`;
-        document.getElementById('barAttente').style.width = Math.round(fondsAtt / totalFonds * 100) + '%';
+        document.getElementById('fondsValides').innerText  = `${totalValide.toLocaleString('fr-FR')} F CFA`;
+        document.getElementById('countValides').innerText  = `${valides.length} transaction(s) validée(s)`;
+        document.getElementById('barValides').style.width  = Math.round(totalValide / totalGeneral * 100) + '%';
 
-        document.getElementById('statVotes').innerText  = totalVotesVal.toLocaleString('fr-FR');
-        document.getElementById('subVotes').innerText   = `vote(s) validé(s) au total`;
+        document.getElementById('fondsAttente').innerText  = `${totalAttente.toLocaleString('fr-FR')} F CFA`;
+        document.getElementById('countAttente').innerText  = `${enAttente.length} requête(s) en attente`;
+        document.getElementById('barAttente').style.width  = Math.round(totalAttente / totalGeneral * 100) + '%';
 
-        document.getElementById('statRejets').innerText = rejets.length.toLocaleString('fr-FR');
+        document.getElementById('totalRejetes').innerText  = rejetes.length;
     }
 
-    // ═══════════════════ GRAPHIQUES
-    function buildCharts() {
-        // Chart 1 : votes par candidate (validés uniquement)
-        const ctxC = document.getElementById('chartCandidates').getContext('2d');
-        const names = candidatesList.map(c => c.name.split(' ').slice(-1)[0]); // prénom uniquement
-        const votes = candidatesList.map(c => c.votes || 0);
-
-        const GOLD_PALETTE = [
-            '#d4a843','#e3b341','#f0c060','#a07828','#c49030',
-            '#b88020','#f5d080','#8a6020','#e8c050','#bc9838','#d0a040'
-        ];
-
-        if (chartCand) chartCand.destroy();
-        chartCand = new Chart(ctxC, {
-            type: 'bar',
-            data: {
-                labels: names,
-                datasets: [{
-                    data: votes,
-                    backgroundColor: GOLD_PALETTE,
-                    borderRadius: 5,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
-                        titleColor: '#d4a843', bodyColor: '#8b949e',
-                        callbacks: { label: ctx => ` ${ctx.parsed.y} votes validés` }
-                    }
-                },
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#484f58', font: { size: 8 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#484f58', font: { size: 8 } } }
-                }
-            }
-        });
-
-        // Chart 2 : répartition des statuts
-        const ctxS = document.getElementById('chartStatuts').getContext('2d');
-        const nVal = allVotes.filter(v => v.status === 'validated').length;
-        const nPen = allVotes.filter(v => v.status === 'pending').length;
-        const nRej = allVotes.filter(v => v.status === 'rejected').length;
-
-        if (chartStat) chartStat.destroy();
-        chartStat = new Chart(ctxS, {
-            type: 'doughnut',
-            data: {
-                labels: ['Validés', 'En attente', 'Rejetés'],
-                datasets: [{
-                    data: [nVal, nPen, nRej],
-                    backgroundColor: ['rgba(63,185,80,0.8)', 'rgba(227,179,65,0.8)', 'rgba(248,81,73,0.7)'],
-                    borderColor: '#0d1117',
-                    borderWidth: 3,
-                    hoverOffset: 6
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 }, padding: 12, boxWidth: 10, boxHeight: 10 } },
-                    tooltip: {
-                        backgroundColor: '#161b22', borderColor: '#30363d', borderWidth: 1,
-                        titleColor: '#e6edf3', bodyColor: '#8b949e'
-                    }
-                }
-            }
-        });
+    // ════════════════════════════════ PANIER MOYEN (super-admin)
+    function calculatePanierMoyen() {
+        const valides    = votesData.filter(v => v.status === 'validated');
+        const totalVotes = valides.reduce((s, v) => s + (v.voteCount || 0), 0);
+        const avg        = valides.length > 0 ? Math.round((totalVotes * 100) / valides.length) : 0;
+        document.getElementById('finAverageCash').innerText = `${avg.toLocaleString('fr-FR')} F CFA`;
     }
 
-    // ═══════════════════ FILTRE
-    function setFilter(f, btn) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderTable();
-    }
-
-    // ═══════════════════ TABLE
-    function renderTable() {
-        const search = (document.getElementById('searchInput').value || '').toLowerCase();
-        let data = allVotes;
-
-        if (currentFilter !== 'all') data = data.filter(v => v.status === currentFilter);
-        if (search) {
-            data = data.filter(v =>
-                (v.senderName  || '').toLowerCase().includes(search) ||
-                (v.txRef       || '').toLowerCase().includes(search) ||
-                (v.candidate   || '').toLowerCase().includes(search) ||
-                (v.senderPhone || '').toLowerCase().includes(search)
-            );
-        }
-
-        document.getElementById('totalCount').innerText = `${data.length} entrée(s)`;
-
-        const tbody = document.getElementById('ledgerBody');
-        if (!data.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Aucune transaction trouvée.</td></tr>`;
+    // ════════════════════════════════ CRUD CANDIDATES (super-admin)
+    function renderCandidatesCrud() {
+        const container = document.getElementById('candidatesCrudList');
+        if (!candidatesList.length) {
+            container.innerHTML = `<p class="text-slate-600 text-xs italic text-center py-6">Aucune candidate.</p>`;
             return;
         }
+        container.innerHTML = candidatesList.map(c => `
+            <div class="flex items-center justify-between p-3 bg-slate-950/50 hover:bg-slate-950 rounded-xl transition-colors">
+                <div>
+                    <p class="font-black text-xs uppercase text-slate-200">${c.name}</p>
+                    <p class="text-[9px] text-slate-500 uppercase mono mt-0.5">#${c.id} · ${c.dept}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-black text-amber-400 mono">${c.votes || 0} pts</span>
+                    <button onclick="editCandidate('${c.id}','${escape(c.name)}','${escape(c.dept)}',${c.votes})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Modifier</button>
+                    <button onclick="deleteCandidate('${c.id}')" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Suppr</button>
+                </div>
+            </div>
+        `).join('');
+    }
 
-        const statusLabel = { validated: 'Validé', pending: 'En attente', rejected: 'Rejeté' };
-        const montant = v => ((parseInt(v.voteCount) || 0) * 100).toLocaleString('fr-FR');
+    function editCandidate(id, name, dept, votes) {
+        document.getElementById('formTitle').innerHTML = `<span class="w-1 h-4 bg-blue-500 rounded-full inline-block mr-2"></span>Modifier la Candidate`;
+        document.getElementById('candId').value    = id;
+        document.getElementById('candName').value  = unescape(name);
+        document.getElementById('candDept').value  = unescape(dept);
+        document.getElementById('candVotes').value = votes;
+    }
 
-        tbody.innerHTML = data.map((v, i) => `
-            <tr>
-                <td class="mono" style="color:var(--muted); font-size:10px;">${i + 1}</td>
-                <td class="td-name">${v.senderName || '—'}</td>
-                <td class="td-phone">${v.senderPhone || '—'}</td>
-                <td class="td-cand" style="color:var(--gold-2);">${v.candidate || '—'}</td>
-                <td class="td-amount" style="color:var(--text);">${montant(v)} F</td>
-                <td class="mono" style="font-size:10px; color:var(--text-2);">${v.voteCount || 0}</td>
-                <td class="td-txref">${v.txRef || '—'}</td>
-                <td>
-                    <span class="badge ${v.status}">
-                        <span class="badge-dot"></span>
-                        ${statusLabel[v.status] || v.status}
-                    </span>
+    function clearCandidateForm() {
+        document.getElementById('formTitle').innerHTML = `<span class="w-1 h-4 bg-amber-500 rounded-full inline-block mr-2"></span>Ajouter une Candidate`;
+        document.getElementById('candidateForm').reset();
+        document.getElementById('candId').value = "";
+    }
+
+    document.getElementById('candidateForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        fd.append('id',    document.getElementById('candId').value);
+        fd.append('name',  document.getElementById('candName').value.trim());
+        fd.append('dept',  document.getElementById('candDept').value.trim());
+        fd.append('votes', document.getElementById('candVotes').value);
+        const file = document.getElementById('candPhoto').files[0];
+        if (file) fd.append('photo', file);
+        const res = await fetch(`${BACKEND_URL}/api/candidate-save`, { method: 'POST', body: fd });
+        if (res.ok) { clearCandidateForm(); loadDashboard(); }
+    });
+
+    async function deleteCandidate(id) {
+        if (confirm("Supprimer cette candidate ?")) {
+            await fetch(`${BACKEND_URL}/api/candidate-delete?id=${id}`, { method: 'DELETE' });
+            loadDashboard();
+        }
+    }
+
+    // ════════════════════════════════ LOGS (super-admin)
+    function renderLogs(logs) {
+        const container = document.getElementById('logsContainer');
+        if (!logs.length) return;
+        container.innerHTML = logs.map(l => `
+            <div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>
+        `).join('');
+    }
+
+    // ════════════════════════════════ GRAPHIQUE (super-admin)
+    function buildChart() {
+        const ctx = document.getElementById('votesChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: candidatesList.map(c => c.name.split(' ')[0]),
+                datasets: [{ label: 'Votes', data: candidatesList.map(c => c.votes || 0), backgroundColor: 'rgba(212,175,55,0.7)', borderColor: '#D4AF37', borderWidth: 1, borderRadius: 6 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', titleColor: '#D4AF37', bodyColor: '#94a3b8', borderColor: '#1e293b', borderWidth: 1 } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } } }
+                }
+            }
+        });
+    }
+
+    // ════════════════════════════════ TABLEAU VALIDATION (super-admin + gestionnaire)
+    function renderVotesTable() {
+        const tbody   = document.getElementById('votesTableBody');
+        const pending = votesData.filter(v => v.status === 'pending');
+        document.getElementById('pendingCount').innerText = `${pending.length} EN ATTENTE`;
+        if (!pending.length) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-600 italic text-xs">✓ Aucune demande en attente</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = pending.map(v => `
+            <tr class="vote-row">
+                <td class="px-5 py-4 font-black uppercase text-slate-200 text-xs">${v.candidate}</td>
+                <td class="px-5 py-4 font-black text-amber-400 mono">${v.voteCount}</td>
+                <td class="px-5 py-4 text-slate-300">
+                    <span class="font-bold text-xs">${v.senderName}</span><br>
+                    <span class="text-[10px] text-slate-500 mono">${v.senderPhone}</span>
+                </td>
+                <td class="px-5 py-4 mono font-black text-blue-400 text-xs">${v.txRef}</td>
+                <td class="px-5 py-4">
+                    <input type="text" id="control-${v.id}" placeholder="ID réel"
+                        class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors">
+                </td>
+                <td class="px-5 py-4">
+                    <a href="${BACKEND_URL}${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2">Voir ↗</a>
+                </td>
+                <td class="px-5 py-4 text-right space-x-2 whitespace-nowrap">
+                    <button onclick="processVote('${v.id}','validate')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3 py-1.5 rounded-xl text-[10px] uppercase transition-all active:scale-95">✓ Valider</button>
+                    <button onclick="processVote('${v.id}','reject')"   class="bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold transition-all active:scale-95">✗ Rejeter</button>
                 </td>
             </tr>
         `).join('');
+    }
+
+    async function processVote(id, action) {
+        const ctrl = document.getElementById(`control-${id}`);
+        const ref  = ctrl ? ctrl.value.toUpperCase().trim() : "";
+        if (action === 'validate' && !ref) { alert("⚠️ Code de contrôle obligatoire !"); return; }
+        await fetch(`${BACKEND_URL}/api/admin-action`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, action, controlRef: ref, role: currentRole })
+        });
+        loadDashboard();
+    }
+
+    // ════════════════════════════════ GRAPHIQUES TG
+    function buildTgCharts() {
+        const PALETTE = ['#d4a843','#e3b341','#f0c060','#a07828','#c49030','#b88020','#f5d080','#8a6020','#e8c050','#bc9838','#d0a040'];
+
+        const ctxC = document.getElementById('tgChartCandidates').getContext('2d');
+        if (tgChartCand) tgChartCand.destroy();
+        tgChartCand = new Chart(ctxC, {
+            type: 'bar',
+            data: {
+                labels: candidatesList.map(c => c.name.split(' ').slice(-1)[0]),
+                datasets: [{ data: candidatesList.map(c => c.votes || 0), backgroundColor: PALETTE, borderRadius: 5 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', titleColor: '#d4a843', bodyColor: '#94a3b8', borderColor: '#1e293b', borderWidth: 1 } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } }
+                }
+            }
+        });
+
+        const ctxS = document.getElementById('tgChartStatuts').getContext('2d');
+        const nVal = votesData.filter(v => v.status === 'validated').length;
+        const nPen = votesData.filter(v => v.status === 'pending').length;
+        const nRej = votesData.filter(v => v.status === 'rejected').length;
+        if (tgChartStat) tgChartStat.destroy();
+        tgChartStat = new Chart(ctxS, {
+            type: 'doughnut',
+            data: {
+                labels: ['Validés', 'En attente', 'Rejetés'],
+                datasets: [{ data: [nVal, nPen, nRej], backgroundColor: ['rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.7)'], borderColor: '#080c14', borderWidth: 3, hoverOffset: 6 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 }, padding: 10, boxWidth: 8 } },
+                    tooltip: { backgroundColor: '#0f172a', titleColor: '#e6edf3', bodyColor: '#8b949e', borderColor: '#1e293b', borderWidth: 1 }
+                }
+            }
+        });
+    }
+
+    // ════════════════════════════════ GRAND LIVRE TG (lecture seule)
+    function setTgFilter(f, btn) {
+        tgFilter = f;
+        document.querySelectorAll('.tg-filter-btn').forEach(b => {
+            b.className = 'tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition-all';
+        });
+        btn.className = 'tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border bg-amber-500 border-amber-500 text-slate-950 transition-all';
+        renderTgLedger();
+    }
+
+    function renderTgLedger() {
+        let data = tgFilter === 'all' ? votesData : votesData.filter(v => v.status === tgFilter);
+        document.getElementById('tgCount').innerText = `${data.length} entrée(s)`;
+
+        const statusLabel = { validated: 'Validé', pending: 'En attente', rejected: 'Rejeté' };
+        const tbody = document.getElementById('tgLedgerBody');
+
+        if (!data.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-slate-600 italic text-xs">Aucune transaction trouvée.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map((v, i) => `
+            <tr class="vote-row">
+                <td class="px-5 py-4 mono text-slate-600 text-[10px]">${i + 1}</td>
+                <td class="px-5 py-4 font-bold text-slate-200 text-xs">${v.senderName || '—'}</td>
+                <td class="px-5 py-4 mono text-slate-500 text-[10px]">${v.senderPhone || '—'}</td>
+                <td class="px-5 py-4 font-black text-[10px] uppercase text-amber-400">${v.candidate || '—'}</td>
+                <td class="px-5 py-4 mono font-bold text-slate-200 text-xs">${((parseInt(v.voteCount) || 0) * 100).toLocaleString('fr-FR')} F CFA</td>
+                <td class="px-5 py-4 mono text-slate-400 text-[10px]">${v.voteCount || 0}</td>
+                <td class="px-5 py-4 mono text-blue-400 text-[10px]">${v.txRef || '—'}</td>
+                <td class="px-5 py-4"><span class="tg-badge-status ${v.status}">${statusLabel[v.status] || v.status}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    // ════════════════════════════════ RESET (super-admin)
+    async function resetPlatform() {
+        if (confirm("Tout réinitialiser ? Action irréversible.") && prompt("Confirmez avec le mot de passe :") === "VOTEGESTION") {
+            await fetch(`${BACKEND_URL}/api/admin-reset`, { method: 'POST' });
+            loadDashboard();
+        }
     }
 </script>
 </body>
