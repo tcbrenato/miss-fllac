@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-app.use(cors());
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+
+// 1. INITIALISATION DE L'APPLICATION (Toujours en premier !)
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 2. CONFIGURATION DES MIDDLEWARES & CORS
+app.use(cors()); // Autorise ton lien Vercel à communiquer avec Render sans blocage
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -21,7 +24,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // SIMULATION DE BASE DE DONNÉES EN MÉMOIRE
-// (Pour la production, ces fichiers peuvent être sauvegardés dans des fichiers .json)
 let candidates = [
     { id: "1", name: "LAWSON Thalia", dept: "Anglais", votes: 0 },
     { id: "2", name: "DOSSOU Gabriella", dept: "DSLC", votes: 0 },
@@ -165,4 +167,4 @@ app.post('/api/admin-reset', (req, res) => {
     res.sendStatus(200);
 });
 
-app.listen(PORT, () => console.log(`🚀 Serveur sécurisé actif sur http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur sécurisé actif sur le port ${PORT}`));
