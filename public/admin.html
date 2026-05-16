@@ -6,135 +6,285 @@
     <title>PANEL DE CONTRÔLE MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Syne', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .card-glow-green { box-shadow: 0 0 0 1px rgba(16,185,129,0.2), 0 4px 24px rgba(16,185,129,0.08); }
+        .card-glow-amber { box-shadow: 0 0 0 1px rgba(245,158,11,0.2), 0 4px 24px rgba(245,158,11,0.08); }
+        .card-glow-red   { box-shadow: 0 0 0 1px rgba(239,68,68,0.2),  0 4px 24px rgba(239,68,68,0.08); }
+        .card-glow-blue  { box-shadow: 0 0 0 1px rgba(59,130,246,0.2), 0 4px 24px rgba(59,130,246,0.08); }
 
-    <div id="loginScreen" class="fixed inset-0 bg-slate-950 flex items-center justify-center z-50 p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-4">
-            <h1 class="text-xl font-black text-amber-500 uppercase italic">CONNEXION SÉCURISÉE</h1>
-            <input type="password" id="adminPass" placeholder="Saisir le mot de passe" class="w-full p-4 bg-slate-950 border border-slate-800 rounded-xl text-center text-white font-mono outline-none focus:border-amber-500">
-            <button onclick="login()" class="w-full bg-amber-500 text-slate-950 font-black py-4 rounded-xl uppercase tracking-wider text-sm active:scale-95 transition-all">Accéder au Panel</button>
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .pulse-dot { animation: pulse-anim 2s infinite; }
+        @keyframes pulse-anim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .badge-superadmin { background: linear-gradient(135deg, #D4AF37 0%, #f59e0b 100%); color: #0f172a; }
+        .badge-gestionnaire { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; }
+
+        /* scrollbar fine */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+        /* transition login -> panel */
+        #panelScreen { animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* table row hover */
+        .vote-row { transition: background 0.15s; }
+        .vote-row:hover { background: rgba(248,197,58,0.04); }
+
+        /* shimmer sur les montants */
+        .amount-val { transition: all 0.4s ease; }
+
+        /* Section gestionnaire : panneau dédié */
+        #gestionnairePanel { display: none; }
+    </style>
+</head>
+<body class="bg-[#080c14] text-slate-100 min-h-screen antialiased">
+
+    <!-- ═══════════════════════════════════════════════════════ LOGIN -->
+    <div id="loginScreen" class="fixed inset-0 bg-[#080c14] flex items-center justify-center z-50 p-4">
+        <div class="relative w-full max-w-sm">
+            <!-- Decorative glow -->
+            <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative bg-slate-900/80 border border-slate-800 p-8 rounded-3xl shadow-2xl text-center space-y-5 backdrop-blur-sm">
+                <div class="space-y-1">
+                    <p class="text-[10px] tracking-[0.3em] text-amber-500/60 uppercase mono">Système Sécurisé</p>
+                    <h1 class="text-2xl font-black text-white uppercase tracking-tight">MISS FLLAC</h1>
+                    <p class="text-[11px] text-slate-500 uppercase tracking-widest">Panel de Contrôle</p>
+                </div>
+                <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                <input 
+                    type="password" 
+                    id="adminPass" 
+                    placeholder="Mot de passe d'accès" 
+                    class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-center text-white mono text-sm outline-none focus:border-amber-500 transition-colors placeholder-slate-600"
+                    onkeydown="if(event.key==='Enter') login()"
+                >
+                <button 
+                    onclick="login()" 
+                    class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-2xl uppercase tracking-widest text-sm active:scale-95 transition-all"
+                >
+                    Accéder →
+                </button>
+                <p id="loginError" class="text-red-400 text-xs font-bold hidden">Mot de passe incorrect.</p>
+            </div>
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════ PANEL -->
     <div id="panelScreen" class="hidden min-h-screen flex flex-col">
-        <header class="bg-slate-950 border-b border-slate-800 p-4">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <div>
-                    <h1 class="text-lg font-black text-amber-500 tracking-tight uppercase">PANEL GLOBAL — MISS FLLAC</h1>
-                    <p id="roleBadge" class="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded inline-block mt-1">Rôle : -</p>
+
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-[#080c14]/90 border-b border-slate-800/60 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center">
+                        <span class="text-slate-950 font-black text-xs">MF</span>
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-black text-white uppercase tracking-tight leading-none">MISS FLLAC</h1>
+                        <span id="roleBadge" class="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md inline-block mt-0.5">—</span>
+                    </div>
                 </div>
-                <button onclick="location.reload()" class="bg-red-500/20 text-red-400 border border-red-500/30 px-4 py-2 rounded-xl text-xs font-bold uppercase">Déconnexion</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mono">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>
+                        <span id="lastRefresh">—</span>
+                    </div>
+                    <button 
+                        onclick="loadDashboard()" 
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all"
+                    >↻ Rafraîchir</button>
+                    <button 
+                        onclick="location.reload()" 
+                        class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all"
+                    >Déconnexion</button>
+                </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-8 flex-1 w-full">
-            
+        <main class="max-w-7xl mx-auto px-4 py-6 space-y-8 flex-1 w-full">
+
+            <!-- ══════════════════════════════ COMPTEURS FINANCIERS (TOUS LES RÔLES) -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Tableau de bord financier</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- Fonds validés -->
+                    <div class="stat-card card-glow-green bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <div class="flex items-start justify-between mb-3">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fonds Validés</span>
+                            <span class="w-6 h-6 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 text-xs">✓</span>
+                        </div>
+                        <p class="amount-val text-2xl font-black text-emerald-400 mono leading-none" id="fondsValides">0 F</p>
+                        <p class="text-[10px] text-slate-600 mt-2" id="countValides">0 transaction(s)</p>
+                        <div class="mt-3 h-0.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="barValides" class="h-full bg-emerald-500 rounded-full transition-all duration-700" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Fonds en attente -->
+                    <div class="stat-card card-glow-amber bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <div class="flex items-start justify-between mb-3">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">En Attente</span>
+                            <span class="w-6 h-6 bg-amber-500/10 rounded-lg flex items-center justify-center text-amber-500 text-xs">⏳</span>
+                        </div>
+                        <p class="amount-val text-2xl font-black text-amber-400 mono leading-none" id="fondsAttente">0 F</p>
+                        <p class="text-[10px] text-slate-600 mt-2" id="countAttente">0 requête(s)</p>
+                        <div class="mt-3 h-0.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="barAttente" class="h-full bg-amber-500 rounded-full transition-all duration-700" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Fraudes rejetées -->
+                    <div class="stat-card card-glow-red bg-slate-900 border border-slate-800 p-5 rounded-2xl">
+                        <div class="flex items-start justify-between mb-3">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fraudes Rejetées</span>
+                            <span class="w-6 h-6 bg-red-500/10 rounded-lg flex items-center justify-center text-red-500 text-xs">✗</span>
+                        </div>
+                        <p class="amount-val text-2xl font-black text-red-400 mono leading-none" id="totalRejetes">0</p>
+                        <p class="text-[10px] text-slate-600 mt-2">Requête(s) bloquée(s)</p>
+                        <div class="mt-3 h-0.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="barRejetes" class="h-full bg-red-500 rounded-full transition-all duration-700" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Panier moyen (super-admin only) -->
+                    <div class="stat-card card-glow-blue bg-slate-900 border border-slate-800 p-5 rounded-2xl" id="cardPanierMoyen">
+                        <div class="flex items-start justify-between mb-3">
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Panier Moyen</span>
+                            <span class="w-6 h-6 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500 text-xs">∅</span>
+                        </div>
+                        <p class="amount-val text-2xl font-black text-blue-400 mono leading-none" id="finAverageCash">0 F</p>
+                        <p class="text-[10px] text-slate-600 mt-2">Par transaction validée</p>
+                        <div class="mt-3 h-0.5 bg-slate-800 rounded-full"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════ SECTION SUPER-ADMIN -->
             <div id="superAdminSection" class="hidden space-y-6">
-                <div class="border-b border-slate-800 pb-2">
-                    <h2 class="text-xl font-black text-amber-500 uppercase italic">🛠️ CONFIGURATION CANDIDATES (SUPER-ADMIN)</h2>
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                    <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Configuration — Super Admin</h2>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md">
-                        <h3 id="formTitle" class="text-sm font-black text-slate-200 uppercase mb-4 border-l-4 border-amber-500 pl-2">Ajouter une Candidate</h3>
+                    <!-- Formulaire candidate -->
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                        <h3 id="formTitle" class="text-xs font-black text-white uppercase mb-5 flex items-center gap-2">
+                            <span class="w-1 h-4 bg-amber-500 rounded-full"></span>Ajouter une Candidate
+                        </h3>
                         <form id="candidateForm" class="space-y-4">
                             <input type="hidden" id="candId">
                             <div>
-                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Nom Complet</label>
-                                <input type="text" id="candName" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500" required>
+                                <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Nom Complet</label>
+                                <input type="text" id="candName" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500 transition-colors" required>
                             </div>
                             <div>
-                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Département</label>
-                                <input type="text" id="candDept" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500" required>
+                                <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Département</label>
+                                <input type="text" id="candDept" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-white outline-none focus:border-amber-500 transition-colors" required>
                             </div>
                             <div>
-                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Ajustement Manuel des Votes</label>
-                                <input type="number" id="candVotes" value="0" min="0" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-black text-white outline-none focus:border-amber-500" required>
+                                <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Ajustement Votes</label>
+                                <input type="number" id="candVotes" value="0" min="0" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-black text-white outline-none focus:border-amber-500 transition-colors mono" required>
                             </div>
                             <div>
-                                <label class="text-[10px] text-slate-400 font-bold uppercase block mb-1">Photo d'affiche</label>
-                                <input type="file" id="candPhoto" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-slate-800 file:text-slate-200 font-bold">
+                                <label class="text-[9px] text-slate-500 font-black uppercase tracking-wider block mb-1.5">Photo d'affiche</label>
+                                <input type="file" id="candPhoto" accept="image/*" class="w-full text-[10px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-slate-800 file:text-slate-300 file:font-bold file:text-[10px] file:uppercase cursor-pointer">
                             </div>
-                            <div class="flex gap-2 pt-2">
-                                <button type="submit" class="flex-1 bg-amber-500 text-slate-950 font-black py-3 rounded-xl text-xs uppercase">Sauvegarder</button>
-                                <button type="button" onclick="clearCandidateForm()" class="bg-slate-800 text-slate-300 font-bold px-4 rounded-xl text-xs uppercase">Annuler</button>
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-[11px] uppercase tracking-wider transition-all active:scale-95">Sauvegarder</button>
+                                <button type="button" onclick="clearCandidateForm()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 rounded-xl text-[11px] uppercase transition-all">Annuler</button>
                             </div>
                         </form>
                     </div>
 
-                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col max-h-[420px]">
-                        <h3 class="text-sm font-black text-slate-200 uppercase mb-4">Candidates Enregistrées</h3>
-                        <div class="overflow-y-auto flex-1 divide-y divide-slate-800 pr-2" id="candidatesCrudList"></div>
+                    <!-- Liste candidates -->
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl lg:col-span-2 flex flex-col max-h-[440px]">
+                        <h3 class="text-xs font-black text-white uppercase mb-4">Candidates Enregistrées</h3>
+                        <div class="overflow-y-auto flex-1 space-y-1 pr-1" id="candidatesCrudList"></div>
                     </div>
                 </div>
 
+                <!-- Graphique + Logs -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    
-                    <div class="space-y-4">
-                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md border-l-4 border-emerald-500">
-                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fonds Totaux Collectés</h3>
-                            <p class="text-2xl font-black text-emerald-400 mt-1 font-mono" id="finTotalCash">0 F CFA</p>
-                            <p class="text-[10px] text-slate-500 mt-1" id="finTotalVotes">0 votes validés au total</p>
-                        </div>
-                        
-                        <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md border-l-4 border-blue-500">
-                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Panier Moyen par Votant</h3>
-                            <p class="text-xl font-black text-blue-400 mt-1 font-mono" id="finAverageCash">0 F CFA</p>
-                            <p class="text-[10px] text-slate-500 mt-1">Par transaction validée</p>
-                        </div>
-
-                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl shadow-md text-center">
-                            <h3 class="text-[10px] font-bold text-slate-500 uppercase">Maintenance Critique</h3>
-                            <button onclick="resetPlatform()" class="w-full mt-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2 rounded-xl text-[11px] uppercase tracking-wider transition-all">⚠️ Reset de la Plateforme</button>
-                        </div>
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl md:col-span-2 flex flex-col">
+                        <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Tendances des Votes</h3>
+                        <div class="flex-1 min-h-[180px]"><canvas id="votesChart"></canvas></div>
                     </div>
 
-                    <div class="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-md col-span-2 flex flex-col">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Graphique des Tendances</h3>
-                        <div class="h-44 flex-1"><canvas id="votesChart"></canvas></div>
-                        
-                        <div class="mt-4 bg-slate-900 border border-slate-800 p-3 rounded-xl">
-                            <h3 class="text-[9px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
-                                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Live Logs
+                    <div class="space-y-4">
+                        <!-- Logs -->
+                        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex flex-col h-[200px]">
+                            <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>Live Logs
                             </h3>
-                            <div id="logsContainer" class="space-y-1 h-16 overflow-y-auto font-mono text-[10px] text-slate-400 custom-scrollbar">
-                                <p class="text-slate-600 italic">Aucune action enregistrée...</p>
+                            <div id="logsContainer" class="flex-1 overflow-y-auto space-y-1 mono text-[9px] text-slate-400">
+                                <p class="text-slate-600 italic">Aucune action...</p>
                             </div>
                         </div>
-                    </div>
 
+                        <!-- Reset -->
+                        <div class="bg-slate-900 border border-red-500/10 p-5 rounded-2xl text-center">
+                            <p class="text-[9px] text-slate-500 uppercase font-black tracking-wider mb-3">Zone Critique</p>
+                            <button onclick="resetPlatform()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all">
+                                ⚠️ Reset Plateforme
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <section class="bg-slate-950 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
-                <div class="p-6 border-b border-slate-800 flex justify-between items-center flex-wrap gap-2">
-                    <h2 class="text-base font-black uppercase text-slate-200">Demandes de vote en attente</h2>
-                    <span id="pendingCount" class="bg-amber-500/10 text-amber-500 text-xs font-black px-3 py-1 rounded-full border border-amber-500/20">0 En attente</span>
+            <!-- ══════════════════════════════ TABLEAU DES DEMANDES (TOUS LES RÔLES) -->
+            <div>
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
+                        <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Demandes en attente</h2>
+                    </div>
+                    <span id="pendingCount" class="bg-amber-500/10 text-amber-400 text-[10px] font-black px-3 py-1.5 rounded-full border border-amber-500/20 mono">0 EN ATTENTE</span>
                 </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 border-b border-slate-800 text-[10px] text-slate-400 uppercase font-black tracking-wider">
-                                <th class="p-4">Candidate</th>
-                                <th class="p-4">Votes</th>
-                                <th class="p-4">Payeur / Téléphone</th>
-                                <th class="p-4">ID Déclaré</th>
-                                <th class="p-4 text-blue-400">ID Contrôle Réel</th>
-                                <th class="p-4">Preuve</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="votesTableBody" class="divide-y divide-slate-800 text-xs"></tbody>
-                    </table>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-[9px] text-slate-500 uppercase font-black tracking-widest">
+                                    <th class="px-5 py-4">Candidate</th>
+                                    <th class="px-5 py-4">Votes</th>
+                                    <th class="px-5 py-4">Payeur</th>
+                                    <th class="px-5 py-4">ID Déclaré</th>
+                                    <th class="px-5 py-4 text-blue-400">ID Contrôle</th>
+                                    <th class="px-5 py-4">Preuve</th>
+                                    <th class="px-5 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="votesTableBody" class="divide-y divide-slate-800/60 text-xs"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </section>
+            </div>
+
         </main>
     </div>
 
     <script>
-        // BASE URL DU SERVEUR DE PRODUCTION RENDER
         const BACKEND_URL = "https://miss-fllac-backend.onrender.com";
 
         let currentRole = "";
@@ -142,83 +292,132 @@
         let candidatesList = [];
         let chartInstance = null;
 
+        // ═══════════════════════════════ LOGIN
         function login() {
             const pass = document.getElementById('adminPass').value.trim();
-            if (pass === "VOTEGESTION") { 
+            const errEl = document.getElementById('loginError');
+            errEl.classList.add('hidden');
+
+            if (pass === "VOTEGESTION") {
                 currentRole = "super-admin";
-                document.getElementById('roleBadge').innerText = "Rôle : Super-Admin (Contrôle Total)";
-                document.getElementById('roleBadge').className = "text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded inline-block mt-1";
+                const badge = document.getElementById('roleBadge');
+                badge.innerText = "Super-Admin";
+                badge.className = "badge-superadmin text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5";
                 document.getElementById('superAdminSection').classList.remove('hidden');
             } else if (pass === "MISS2026FLLAC") {
                 currentRole = "gestionnaire";
-                document.getElementById('roleBadge').innerText = "Rôle : Gestionnaire de Validation";
-                document.getElementById('roleBadge').className = "text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded inline-block mt-1";
+                const badge = document.getElementById('roleBadge');
+                badge.innerText = "Gestionnaire";
+                badge.className = "badge-gestionnaire text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5";
+                document.getElementById('cardPanierMoyen').classList.add('hidden');
             } else {
-                alert("Mot de passe incorrect.");
+                errEl.classList.remove('hidden');
                 return;
             }
+
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('panelScreen').classList.remove('hidden');
             loadDashboard();
         }
 
+        // ═══════════════════════════════ CHARGEMENT PRINCIPAL
         async function loadDashboard() {
             try {
                 const resVotes = await fetch(`${BACKEND_URL}/api/admin-list`);
                 votesData = await resVotes.json();
-                const resCand = await fetch(`${BACKEND_URL}/api/candidates-list`); 
-                candidatesList = await resCand.json();
-                const resLogs = await fetch(`${BACKEND_URL}/api/admin-logs`);
-                const logsData = await resLogs.json();
 
+                const resCand = await fetch(`${BACKEND_URL}/api/candidates-list`);
+                candidatesList = await resCand.json();
+
+                // ✅ Compteurs financiers : accessibles à TOUS les rôles
+                calculerIndicateursFinanciers(votesData);
                 renderVotesTable();
-                if(currentRole === "super-admin") {
+
+                // Fonctions réservées au super-admin
+                if (currentRole === "super-admin") {
+                    const resLogs = await fetch(`${BACKEND_URL}/api/admin-logs`);
+                    const logsData = await resLogs.json();
                     renderCandidatesCrud();
                     buildChart();
                     renderLogs(logsData);
-                    calculateFinance();
+                    calculatePanierMoyen();
                 }
-            } catch (e) { console.log("Erreur de rafraîchissement."); }
+
+                // Heure du dernier rafraîchissement
+                document.getElementById('lastRefresh').innerText = 
+                    "Màj " + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            } catch (e) {
+                console.error("Erreur de chargement :", e);
+            }
         }
 
-        function calculateFinance() {
-            const validatedRequests = votesData.filter(v => v.status === 'validated');
-            const totalVotes = validatedRequests.reduce((sum, v) => sum + (v.voteCount || 0), 0);
-            const totalCash = totalVotes * 100;
-            const averageCash = validatedRequests.length > 0 ? Math.round(totalCash / validatedRequests.length) : 0;
+        // ═══════════════════════════════ ✅ COMPTEURS FINANCIERS (TOUS LES RÔLES)
+        function calculerIndicateursFinanciers(data) {
+            const valides   = data.filter(v => v.status === 'validated');
+            const enAttente = data.filter(v => v.status === 'pending');
+            const rejetes   = data.filter(v => v.status === 'rejected');
 
-            document.getElementById('finTotalCash').innerText = `${totalCash.toLocaleString('fr-FR')} F CFA`;
-            document.getElementById('finTotalVotes').innerText = `${totalVotes} vote(s) validé(s) au total`;
-            document.getElementById('finAverageCash').innerText = `${averageCash.toLocaleString('fr-FR')} F CFA`;
+            const totalValide  = valides.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
+            const totalAttente = enAttente.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
+            const totalGeneral = totalValide + totalAttente || 1; // évite division par 0 pour les barres
+
+            document.getElementById('fondsValides').innerText  = `${totalValide.toLocaleString('fr-FR')} F CFA`;
+            document.getElementById('countValides').innerText  = `${valides.length} transaction(s) validée(s)`;
+
+            document.getElementById('fondsAttente').innerText  = `${totalAttente.toLocaleString('fr-FR')} F CFA`;
+            document.getElementById('countAttente').innerText  = `${enAttente.length} requête(s) en attente`;
+
+            document.getElementById('totalRejetes').innerText  = `${rejetes.length}`;
+
+            // Barres de progression relatives
+            document.getElementById('barValides').style.width  = `${Math.round((totalValide / totalGeneral) * 100)}%`;
+            document.getElementById('barAttente').style.width  = `${Math.round((totalAttente / totalGeneral) * 100)}%`;
+            document.getElementById('barRejetes').style.width  = `${Math.min(rejetes.length * 10, 100)}%`;
         }
 
+        // ═══════════════════════════════ PANIER MOYEN (super-admin uniquement)
+        function calculatePanierMoyen() {
+            const valides    = votesData.filter(v => v.status === 'validated');
+            const totalVotes = valides.reduce((s, v) => s + (v.voteCount || 0), 0);
+            const totalCash  = totalVotes * 100;
+            const avg        = valides.length > 0 ? Math.round(totalCash / valides.length) : 0;
+            document.getElementById('finAverageCash').innerText = `${avg.toLocaleString('fr-FR')} F CFA`;
+        }
+
+        // ═══════════════════════════════ CRUD CANDIDATES
         function renderCandidatesCrud() {
             const container = document.getElementById('candidatesCrudList');
+            if (!candidatesList.length) {
+                container.innerHTML = `<p class="text-slate-600 text-xs italic text-center py-6">Aucune candidate.</p>`;
+                return;
+            }
             container.innerHTML = candidatesList.map(c => `
-                <div class="flex items-center justify-between py-2 border-b border-slate-800/60">
+                <div class="flex items-center justify-between p-3 bg-slate-950/50 hover:bg-slate-950 rounded-xl transition-colors">
                     <div>
-                        <p class="font-bold text-xs uppercase">${c.name}</p>
-                        <p class="text-[10px] text-slate-500 uppercase">${c.id} - ${c.dept}</p>
+                        <p class="font-black text-xs uppercase text-slate-200">${c.name}</p>
+                        <p class="text-[9px] text-slate-500 uppercase mono mt-0.5">#${c.id} · ${c.dept}</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-black text-amber-500">${c.votes || 0} pts</span>
-                        <button onclick="editCandidate('${c.id}', '${escape(c.name)}', '${escape(c.dept)}', ${c.votes})" class="bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Modifier</button>
-                        <button onclick="deleteCandidate('${c.id}')" class="bg-red-600/20 text-red-400 px-2 py-0.5 rounded text-[10px] uppercase font-bold">Suppr</button>
+                        <span class="text-xs font-black text-amber-400 mono">${c.votes || 0} pts</span>
+                        <button onclick="editCandidate('${c.id}', '${escape(c.name)}', '${escape(c.dept)}', ${c.votes})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Modifier</button>
+                        <button onclick="deleteCandidate('${c.id}')" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Suppr</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function editCandidate(id, name, dept, votes) {
-            document.getElementById('formTitle').innerText = "Modifier la Candidate";
-            document.getElementById('candId').value = id;
-            document.getElementById('candName').value = unescape(name);
-            document.getElementById('candDept').value = unescape(dept);
+            document.getElementById('formTitle').innerHTML = `<span class="w-1 h-4 bg-blue-500 rounded-full inline-block mr-2"></span>Modifier la Candidate`;
+            document.getElementById('candId').value    = id;
+            document.getElementById('candName').value  = unescape(name);
+            document.getElementById('candDept').value  = unescape(dept);
             document.getElementById('candVotes').value = votes;
+            document.getElementById('candidateForm').scrollIntoView({ behavior: 'smooth' });
         }
 
         function clearCandidateForm() {
-            document.getElementById('formTitle').innerText = "Ajouter une Candidate";
+            document.getElementById('formTitle').innerHTML = `<span class="w-1 h-4 bg-amber-500 rounded-full inline-block mr-2"></span>Ajouter une Candidate`;
             document.getElementById('candidateForm').reset();
             document.getElementById('candId').value = "";
         }
@@ -226,49 +425,68 @@
         document.getElementById('candidateForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('id', document.getElementById('candId').value);
-            formData.append('name', document.getElementById('candName').value.trim());
-            formData.append('dept', document.getElementById('candDept').value.trim());
+            formData.append('id',    document.getElementById('candId').value);
+            formData.append('name',  document.getElementById('candName').value.trim());
+            formData.append('dept',  document.getElementById('candDept').value.trim());
             formData.append('votes', document.getElementById('candVotes').value);
             const file = document.getElementById('candPhoto').files[0];
-            if(file) formData.append('photo', file);
-
+            if (file) formData.append('photo', file);
             const res = await fetch(`${BACKEND_URL}/api/candidate-save`, { method: 'POST', body: formData });
-            if(res.ok) { clearCandidateForm(); loadDashboard(); }
+            if (res.ok) { clearCandidateForm(); loadDashboard(); }
         });
 
         async function deleteCandidate(id) {
-            if(confirm("Supprimer cette candidate ?")) {
+            if (confirm("Supprimer cette candidate ?")) {
                 await fetch(`${BACKEND_URL}/api/candidate-delete?id=${id}`, { method: 'DELETE' });
                 loadDashboard();
             }
         }
 
+        // ═══════════════════════════════ LOGS
         function renderLogs(logs) {
             const container = document.getElementById('logsContainer');
-            if(logs.length === 0) return;
-            container.innerHTML = logs.map(l => `<div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>`).join('');
+            if (!logs.length) return;
+            container.innerHTML = logs.map(l => `
+                <div class="py-1 border-b border-slate-800/40 leading-relaxed">
+                    <span class="text-amber-500">[${l.time}]</span> ${l.text}
+                </div>
+            `).join('');
         }
 
+        // ═══════════════════════════════ TABLEAU DES VOTES
         function renderVotesTable() {
-            const tbody = document.getElementById('votesTableBody');
+            const tbody   = document.getElementById('votesTableBody');
             const pending = votesData.filter(v => v.status === 'pending');
-            document.getElementById('pendingCount').innerText = `${pending.length} En attente`;
-            if(pending.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic">Aucun vote.</td></tr>`;
+            document.getElementById('pendingCount').innerText = `${pending.length} EN ATTENTE`;
+
+            if (!pending.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-600 italic text-xs">✓ Aucune demande en attente</td></tr>`;
                 return;
             }
+
             tbody.innerHTML = pending.map(v => `
-                <tr class="hover:bg-slate-900/40">
-                    <td class="p-4 font-black uppercase text-slate-200">${v.candidate}</td>
-                    <td class="p-4 font-black text-amber-500">${v.voteCount}</td>
-                    <td class="p-4 text-slate-300 font-medium">${v.senderName}<br><span class="text-[10px] text-slate-500">${v.senderPhone}</span></td>
-                    <td class="p-4 font-mono font-black text-blue-400">${v.txRef}</td>
-                    <td class="p-4"><input type="text" id="control-${v.id}" placeholder="ID Réel" class="p-1 bg-slate-950 border border-slate-800 rounded text-xs font-mono font-black text-white outline-none uppercase w-32"></td>
-                    <td class="p-4"><a href="${BACKEND_URL}${v.captureUrl}" target="_blank" class="text-amber-500 hover:underline font-bold text-[10px]">Voir ↗</a></td>
-                    <td class="p-4 text-right space-x-2 whitespace-nowrap">
-                        <button onclick="processVote('${v.id}', 'validate')" class="bg-emerald-600 text-white font-bold px-2 py-1 rounded text-[10px] uppercase">Valider</button>
-                        <button onclick="processVote('${v.id}', 'reject')" class="bg-red-600/20 text-red-400 border border-red-500/30 px-2 py-1 rounded text-[10px] uppercase">Rejeter</button>
+                <tr class="vote-row">
+                    <td class="px-5 py-4 font-black uppercase text-slate-200 text-xs">${v.candidate}</td>
+                    <td class="px-5 py-4 font-black text-amber-400 mono">${v.voteCount}</td>
+                    <td class="px-5 py-4 text-slate-300">
+                        <span class="font-bold text-xs">${v.senderName}</span><br>
+                        <span class="text-[10px] text-slate-500 mono">${v.senderPhone}</span>
+                    </td>
+                    <td class="px-5 py-4 mono font-black text-blue-400 text-xs">${v.txRef}</td>
+                    <td class="px-5 py-4">
+                        <input 
+                            type="text" 
+                            id="control-${v.id}" 
+                            placeholder="ID réel" 
+                            class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors"
+                        >
+                    </td>
+                    <td class="px-5 py-4">
+                        <a href="${BACKEND_URL}${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2 transition-colors">Voir ↗</a>
+                    </td>
+                    <td class="px-5 py-4 text-right space-x-2 whitespace-nowrap">
+                        <button onclick="processVote('${v.id}', 'validate')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3 py-1.5 rounded-xl text-[10px] uppercase transition-all active:scale-95">✓ Valider</button>
+                        <button onclick="processVote('${v.id}', 'reject')"   class="bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold transition-all active:scale-95">✗ Rejeter</button>
                     </td>
                 </tr>
             `).join('');
@@ -276,9 +494,8 @@
 
         async function processVote(id, action) {
             const ctrl = document.getElementById(`control-${id}`);
-            const ref = ctrl ? ctrl.value.toUpperCase().trim() : "";
-            if(action === 'validate' && !ref) { alert("Code de contrôle obligatoire !"); return; }
-            
+            const ref  = ctrl ? ctrl.value.toUpperCase().trim() : "";
+            if (action === 'validate' && !ref) { alert("⚠️ Code de contrôle obligatoire avant validation !"); return; }
             await fetch(`${BACKEND_URL}/api/admin-action`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -287,22 +504,51 @@
             loadDashboard();
         }
 
+        // ═══════════════════════════════ RESET
         async function resetPlatform() {
-            if(confirm("Tout réinitialiser ?") && prompt("Mot de passe :") === "VOTEGESTION") {
+            if (confirm("Tout réinitialiser ? Cette action est irréversible.") && prompt("Confirmez avec le mot de passe :") === "VOTEGESTION") {
                 await fetch(`${BACKEND_URL}/api/admin-reset`, { method: 'POST' });
                 loadDashboard();
             }
         }
 
+        // ═══════════════════════════════ GRAPHIQUE
         function buildChart() {
-            const ctx = document.getElementById('votesChart').getContext('2d');
-            const names = candidatesList.map(c => c.name);
+            const ctx   = document.getElementById('votesChart').getContext('2d');
+            const names = candidatesList.map(c => c.name.split(' ')[0]);
             const score = candidatesList.map(c => c.votes || 0);
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: names, datasets: [{ label: 'Votes', data: score, backgroundColor: '#D4AF37' }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'Votes',
+                        data: score,
+                        backgroundColor: 'rgba(212,175,55,0.7)',
+                        borderColor: '#D4AF37',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleColor: '#D4AF37',
+                            bodyColor: '#94a3b8',
+                            borderColor: '#1e293b',
+                            borderWidth: 1,
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } } }
+                    }
+                }
             });
         }
     </script>

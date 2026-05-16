@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // 2. CONFIGURATION DES MIDDLEWARES & CORS
-app.use(cors()); // Autorise ton lien Vercel à communiquer avec Render sans blocage
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
@@ -39,8 +39,8 @@ let candidates = [
 ];
 
 let voteRequests = [];
-let usedTransactionIds = new Set(); // Stocke tous les IDs validés ou en attente pour bloquer les doublons
-let logsHistory = []; // Historique des actions des gestionnaires
+let usedTransactionIds = new Set();
+let logsHistory = [];
 
 // 1. API : Récupérer le classement pour la page d'accueil
 app.get('/api/ranking', (req, res) => {
@@ -52,7 +52,15 @@ app.get('/api/ranking', (req, res) => {
 // 2. API : Soumission d'un vote par un utilisateur (AVEC ANTI-FRAUDE)
 app.post('/api/voter', upload.single('capture'), (req, res) => {
     const { candidate, voteCount, senderName, senderPhone, txRef } = req.body;
-    
+
+    // 📢 LOGS EN DIRECT DANS LE TERMINAL VS CODE
+    console.log("\n================ 🔥 NOUVEAU VOTE REÇU ==================");
+    console.log(`👤 Payeur    : ${senderName || 'Inconnu'} (${senderPhone || 'Pas de numéro'})`);
+    console.log(`👑 Candidate : ${candidate ? candidate.toUpperCase() : 'Non spécifiée'}`);
+    console.log(`🗳️ Nombre    : ${voteCount || 1} vote(s)`);
+    console.log(`🆔 ID Saisi  : ${txRef || 'Aucun'}`);
+    console.log("========================================================");
+
     if (!txRef) {
         return res.status(400).json({ error: "L'ID de transaction est obligatoire." });
     }
@@ -65,7 +73,6 @@ app.post('/api/voter', upload.single('capture'), (req, res) => {
         return res.status(400).json({ error: "Cet ID de transaction a déjà été soumis pour un vote." });
     }
 
-    // Ajouter temporairement l'ID à la liste des IDs utilisés pour bloquer toute double soumission immédiate
     usedTransactionIds.add(cleanTxRef);
 
     const newRequest = {
@@ -86,7 +93,7 @@ app.post('/api/voter', upload.single('capture'), (req, res) => {
 // 3. API : Liste complète pour le dashboard Admin
 app.get('/api/admin-list', (req, res) => { res.json(voteRequests); });
 app.get('/api/candidates-list', (req, res) => { res.json(candidates); });
-app.get('/api/admin-logs', (req, res) => { res.json(logsHistory); }); // Nouvel endpoint pour les logs
+app.get('/api/admin-logs', (req, res) => { res.json(logsHistory); });
 
 // 4. API : Action du Gestionnaire (Validation / Rejet + Traçabilité)
 app.post('/api/admin-action', (req, res) => {
@@ -103,11 +110,9 @@ app.post('/api/admin-action', (req, res) => {
         vote.status = 'validated';
         vote.controlRef = controlRef.toUpperCase().trim();
 
-        // Ajouter les votes à la candidate correspondante
         const cand = candidates.find(c => c.name === vote.candidate);
         if (cand) cand.votes += vote.voteCount;
 
-        // Enregistrer dans l'historique
         logsHistory.unshift({
             time: timestamp,
             text: `✅ ${nameGestionnaire} a VALIDÉ ${vote.voteCount} vote(s) pour "${vote.candidate}". (ID Réf: ${vote.txRef})`
@@ -115,8 +120,6 @@ app.post('/api/admin-action', (req, res) => {
 
     } else if (action === 'reject') {
         vote.status = 'rejected';
-        
-        // Libérer l'ID de transaction pour que quelqu'un d'autre puisse corriger si c'était une erreur de frappe
         usedTransactionIds.delete(vote.txRef);
 
         logsHistory.unshift({
@@ -132,7 +135,7 @@ app.post('/api/admin-action', (req, res) => {
 app.post('/api/candidate-save', upload.single('photo'), (req, res) => {
     const { id, name, dept, votes } = req.body;
     
-    if (id) { // Modification
+    if (id) {
         const cand = candidates.find(c => c.id == id);
         if (cand) {
             cand.name = name;
@@ -140,7 +143,7 @@ app.post('/api/candidate-save', upload.single('photo'), (req, res) => {
             cand.votes = parseInt(votes);
             if (req.file) cand.photoUrl = `/uploads/${req.file.filename}`;
         }
-    } else { // Ajout
+    } else {
         const newId = (candidates.length + 1).toString();
         candidates.push({
             id: newId,
