@@ -1,4 +1,6 @@
 const express = require('express');
+const cors = require('cors');
+app.use(cors());
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
