@@ -10,32 +10,24 @@
     <style>
         * { font-family: 'Syne', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
-
         .card-glow-green { box-shadow: 0 0 0 1px rgba(16,185,129,0.2), 0 4px 24px rgba(16,185,129,0.06); }
         .card-glow-amber { box-shadow: 0 0 0 1px rgba(245,158,11,0.2), 0 4px 24px rgba(245,158,11,0.06); }
         .card-glow-red   { box-shadow: 0 0 0 1px rgba(239,68,68,0.2),  0 4px 24px rgba(239,68,68,0.06); }
         .card-glow-blue  { box-shadow: 0 0 0 1px rgba(59,130,246,0.2), 0 4px 24px rgba(59,130,246,0.06); }
-
         .stat-card { transition: transform 0.2s ease; }
         .stat-card:hover { transform: translateY(-2px); }
-
         .pulse-dot { animation: pulse-anim 2s infinite; }
         @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:.3} }
-
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-
         #panelScreen { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
         .vote-row { transition: background 0.15s; }
         .vote-row:hover { background: rgba(248,197,58,0.03); }
-
         .badge-superadmin   { background: linear-gradient(135deg,#D4AF37,#f59e0b); color:#0f172a; }
         .badge-gestionnaire { background: linear-gradient(135deg,#3b82f6,#6366f1); color:white; }
         .badge-tg           { background: linear-gradient(135deg,#10b981,#059669); color:white; }
-
         .tg-badge-status {
             display:inline-flex; align-items:center; gap:4px;
             font-size:9px; font-weight:700; letter-spacing:.08em;
@@ -44,7 +36,6 @@
         .tg-badge-status.validated { background:rgba(16,185,129,.12); color:#10b981; border:1px solid rgba(16,185,129,.2); }
         .tg-badge-status.pending   { background:rgba(245,158,11,.12); color:#f59e0b; border:1px solid rgba(245,158,11,.2); }
         .tg-badge-status.rejected  { background:rgba(239,68,68,.10);  color:#ef4444; border:1px solid rgba(239,68,68,.2); }
-
         .prog-track { height:3px; background:#1e293b; border-radius:2px; margin-top:12px; overflow:hidden; }
         .prog-fill  { height:100%; border-radius:2px; transition:width .8s cubic-bezier(.4,0,.2,1); width:0%; }
         .prog-fill.green { background:#10b981; }
@@ -78,7 +69,6 @@
 <!-- ════════════════════════════════════════════════ PANEL -->
 <div id="panelScreen" class="hidden min-h-screen flex flex-col">
 
-    <!-- Header -->
     <header class="sticky top-0 z-40 bg-[#080c14]/90 border-b border-slate-800/60 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-4 flex-wrap">
             <div class="flex items-center gap-3">
@@ -109,16 +99,18 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
+                <!-- ✅ Fonds validés = scores réels des candidates -->
                 <div class="stat-card card-glow-green bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fonds Validés</span>
                         <span class="w-6 h-6 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 text-xs">✓</span>
                     </div>
                     <p class="text-2xl font-black text-emerald-400 mono leading-none" id="fondsValides">0 F</p>
-                    <p class="text-[10px] text-slate-600 mt-2" id="countValides">0 transaction(s)</p>
+                    <p class="text-[10px] text-slate-600 mt-2" id="countValides">0 vote(s) validé(s)</p>
                     <div class="prog-track"><div class="prog-fill green" id="barValides"></div></div>
                 </div>
 
+                <!-- ✅ Fonds en attente = nouvelles soumissions pending -->
                 <div class="stat-card card-glow-amber bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">En Attente</span>
@@ -138,7 +130,6 @@
                     <p class="text-[10px] text-slate-600 mt-2">Requête(s) bloquée(s)</p>
                 </div>
 
-                <!-- Panier moyen : super-admin uniquement, masqué pour les autres -->
                 <div class="stat-card card-glow-blue bg-slate-900 border border-slate-800 p-5 rounded-2xl" id="cardPanierMoyen">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Panier Moyen</span>
@@ -158,7 +149,6 @@
                 <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Configuration — Super Admin</h2>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Formulaire -->
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                     <h3 id="formTitle" class="text-xs font-black text-white uppercase mb-5 flex items-center gap-2">
                         <span class="w-1 h-4 bg-amber-500 rounded-full"></span>Ajouter une Candidate
@@ -187,13 +177,11 @@
                         </div>
                     </form>
                 </div>
-                <!-- Liste candidates -->
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl lg:col-span-2 flex flex-col max-h-[440px]">
                     <h3 class="text-xs font-black text-white uppercase mb-4">Candidates Enregistrées</h3>
                     <div class="overflow-y-auto flex-1 space-y-1 pr-1" id="candidatesCrudList"></div>
                 </div>
             </div>
-            <!-- Graphique + Logs + Reset -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl md:col-span-2 flex flex-col">
                     <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Tendances des Votes</h3>
@@ -237,6 +225,7 @@
                                 <th class="px-5 py-4">Payeur</th>
                                 <th class="px-5 py-4">ID Déclaré</th>
                                 <th class="px-5 py-4 text-blue-400">ID Contrôle</th>
+                                <th class="px-5 py-4">Heure</th>
                                 <th class="px-5 py-4">Preuve</th>
                                 <th class="px-5 py-4 text-right">Actions</th>
                             </tr>
@@ -249,7 +238,6 @@
 
         <!-- ─────────────────── GRAND LIVRE TG — lecture seule -->
         <div id="tgSection" class="hidden space-y-6">
-
             <div class="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4 flex items-center gap-3">
                 <span class="text-lg">📋</span>
                 <div>
@@ -257,8 +245,6 @@
                     <p class="text-[11px] text-slate-400 mt-0.5">Supervision financière uniquement. Aucune action possible depuis cet espace.</p>
                 </div>
             </div>
-
-            <!-- Graphiques TG -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                     <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Votes par Candidate</h3>
@@ -269,8 +255,6 @@
                     <div class="h-52"><canvas id="tgChartStatuts"></canvas></div>
                 </div>
             </div>
-
-            <!-- Grand livre -->
             <div>
                 <div class="flex items-center gap-2 mb-4">
                     <div class="w-1 h-5 bg-emerald-500 rounded-full"></div>
@@ -289,6 +273,7 @@
                             <thead>
                                 <tr class="border-b border-slate-800 text-[9px] text-slate-500 uppercase font-black tracking-widest">
                                     <th class="px-5 py-4">#</th>
+                                    <th class="px-5 py-4">Heure</th>
                                     <th class="px-5 py-4">Expéditeur</th>
                                     <th class="px-5 py-4">Téléphone</th>
                                     <th class="px-5 py-4">Candidate</th>
@@ -329,21 +314,16 @@
             currentRole = "super-admin";
             setBadge("Super-Admin", "badge-superadmin");
             document.getElementById('superAdminSection').classList.remove('hidden');
-            // validationSection visible par défaut, tgSection caché par défaut ✓
-
         } else if (pass === "MISS2026FLLAC") {
             currentRole = "gestionnaire";
             setBadge("Gestionnaire", "badge-gestionnaire");
             document.getElementById('cardPanierMoyen').classList.add('hidden');
-            // validationSection visible par défaut ✓
-
         } else if (pass === "TG2026FLLAC") {
             currentRole = "tg";
             setBadge("Trésorerie — Audit", "badge-tg");
             document.getElementById('cardPanierMoyen').classList.add('hidden');
-            document.getElementById('validationSection').classList.add('hidden'); // pas de tableau de validation
-            document.getElementById('tgSection').classList.remove('hidden');      // grand livre à la place
-
+            document.getElementById('validationSection').classList.add('hidden');
+            document.getElementById('tgSection').classList.remove('hidden');
         } else {
             err.classList.remove('hidden');
             return;
@@ -370,8 +350,8 @@
             votesData      = await resVotes.json();
             candidatesList = await resCand.json();
 
-            // Compteurs financiers : visibles par TOUS
-            calculerIndicateursFinanciers(votesData);
+            // ✅ Compteurs financiers : visibles par TOUS
+            calculerIndicateursFinanciers(votesData, candidatesList);
 
             if (currentRole === "super-admin") {
                 const resLogs  = await fetch(`${BACKEND_URL}/api/admin-logs`);
@@ -398,18 +378,23 @@
         } catch (e) { console.error("Erreur de chargement :", e); }
     }
 
-    // ════════════════════════════════ COMPTEURS FINANCIERS (tous les rôles)
-    function calculerIndicateursFinanciers(data) {
-        const valides   = data.filter(v => v.status === 'validated');
-        const enAttente = data.filter(v => v.status === 'pending');
-        const rejetes   = data.filter(v => v.status === 'rejected');
+    // ════════════════════════════════ ✅ COMPTEURS FINANCIERS CORRIGÉS
+    function calculerIndicateursFinanciers(votesData, candidatesData) {
+        // ✅ Fonds validés = somme réelle des votes des candidates × 100 F
+        const totalVotesValides = candidatesData.reduce((s, c) => s + (parseInt(c.votes) || 0), 0);
+        const totalValide = totalVotesValides * 100;
 
-        const totalValide  = valides.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
-        const totalAttente = enAttente.reduce((s, v) => s + (parseInt(v.voteCount || 0) * 100), 0);
+        // ✅ Fonds en attente = nouvelles soumissions pending depuis Supabase
+        const enAttente  = votesData.filter(v => v.status === 'pending');
+        const totalAttente = enAttente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
+
+        // ✅ Fraudes rejetées
+        const rejetes = votesData.filter(v => v.status === 'rejected');
+
         const totalGeneral = (totalValide + totalAttente) || 1;
 
         document.getElementById('fondsValides').innerText  = `${totalValide.toLocaleString('fr-FR')} F CFA`;
-        document.getElementById('countValides').innerText  = `${valides.length} transaction(s) validée(s)`;
+        document.getElementById('countValides').innerText  = `${totalVotesValides} vote(s) validé(s)`;
         document.getElementById('barValides').style.width  = Math.round(totalValide / totalGeneral * 100) + '%';
 
         document.getElementById('fondsAttente').innerText  = `${totalAttente.toLocaleString('fr-FR')} F CFA`;
@@ -422,7 +407,7 @@
     // ════════════════════════════════ PANIER MOYEN (super-admin)
     function calculatePanierMoyen() {
         const valides    = votesData.filter(v => v.status === 'validated');
-        const totalVotes = valides.reduce((s, v) => s + (v.voteCount || 0), 0);
+        const totalVotes = valides.reduce((s, v) => s + (parseInt(v.voteCount) || 0), 0);
         const avg        = valides.length > 0 ? Math.round((totalVotes * 100) / valides.length) : 0;
         document.getElementById('finAverageCash').innerText = `${avg.toLocaleString('fr-FR')} F CFA`;
     }
@@ -488,7 +473,9 @@
         const container = document.getElementById('logsContainer');
         if (!logs.length) return;
         container.innerHTML = logs.map(l => `
-            <div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>
+            <div class="py-1 border-b border-slate-800/40">
+                <span class="text-amber-500">[${l.time}]</span> ${l.text}
+            </div>
         `).join('');
     }
 
@@ -519,10 +506,14 @@
         const pending = votesData.filter(v => v.status === 'pending');
         document.getElementById('pendingCount').innerText = `${pending.length} EN ATTENTE`;
         if (!pending.length) {
-            tbody.innerHTML = `<tr><td colspan="7" class="p-10 text-center text-slate-600 italic text-xs">✓ Aucune demande en attente</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-slate-600 italic text-xs">✓ Aucune demande en attente</td></tr>`;
             return;
         }
-        tbody.innerHTML = pending.map(v => `
+        tbody.innerHTML = pending.map(v => {
+            const heure = v.submittedAt
+                ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                : '—';
+            return `
             <tr class="vote-row">
                 <td class="px-5 py-4 font-black uppercase text-slate-200 text-xs">${v.candidate}</td>
                 <td class="px-5 py-4 font-black text-amber-400 mono">${v.voteCount}</td>
@@ -535,6 +526,7 @@
                     <input type="text" id="control-${v.id}" placeholder="ID réel"
                         class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors">
                 </td>
+                <td class="px-5 py-4 mono text-slate-500 text-[10px]">${heure}</td>
                 <td class="px-5 py-4">
                     <a href="${BACKEND_URL}${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2">Voir ↗</a>
                 </td>
@@ -542,8 +534,8 @@
                     <button onclick="processVote('${v.id}','validate')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3 py-1.5 rounded-xl text-[10px] uppercase transition-all active:scale-95">✓ Valider</button>
                     <button onclick="processVote('${v.id}','reject')"   class="bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold transition-all active:scale-95">✗ Rejeter</button>
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
     }
 
     async function processVote(id, action) {
@@ -561,7 +553,6 @@
     // ════════════════════════════════ GRAPHIQUES TG
     function buildTgCharts() {
         const PALETTE = ['#d4a843','#e3b341','#f0c060','#a07828','#c49030','#b88020','#f5d080','#8a6020','#e8c050','#bc9838','#d0a040'];
-
         const ctxC = document.getElementById('tgChartCandidates').getContext('2d');
         if (tgChartCand) tgChartCand.destroy();
         tgChartCand = new Chart(ctxC, {
@@ -601,7 +592,7 @@
         });
     }
 
-    // ════════════════════════════════ GRAND LIVRE TG (lecture seule)
+    // ════════════════════════════════ GRAND LIVRE TG
     function setTgFilter(f, btn) {
         tgFilter = f;
         document.querySelectorAll('.tg-filter-btn').forEach(b => {
@@ -614,18 +605,20 @@
     function renderTgLedger() {
         let data = tgFilter === 'all' ? votesData : votesData.filter(v => v.status === tgFilter);
         document.getElementById('tgCount').innerText = `${data.length} entrée(s)`;
-
         const statusLabel = { validated: 'Validé', pending: 'En attente', rejected: 'Rejeté' };
         const tbody = document.getElementById('tgLedgerBody');
-
         if (!data.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="p-10 text-center text-slate-600 italic text-xs">Aucune transaction trouvée.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="9" class="p-10 text-center text-slate-600 italic text-xs">Aucune transaction trouvée.</td></tr>`;
             return;
         }
-
-        tbody.innerHTML = data.map((v, i) => `
+        tbody.innerHTML = data.map((v, i) => {
+            const heure = v.submittedAt
+                ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                : '—';
+            return `
             <tr class="vote-row">
                 <td class="px-5 py-4 mono text-slate-600 text-[10px]">${i + 1}</td>
+                <td class="px-5 py-4 mono text-slate-500 text-[10px]">${heure}</td>
                 <td class="px-5 py-4 font-bold text-slate-200 text-xs">${v.senderName || '—'}</td>
                 <td class="px-5 py-4 mono text-slate-500 text-[10px]">${v.senderPhone || '—'}</td>
                 <td class="px-5 py-4 font-black text-[10px] uppercase text-amber-400">${v.candidate || '—'}</td>
@@ -633,8 +626,8 @@
                 <td class="px-5 py-4 mono text-slate-400 text-[10px]">${v.voteCount || 0}</td>
                 <td class="px-5 py-4 mono text-blue-400 text-[10px]">${v.txRef || '—'}</td>
                 <td class="px-5 py-4"><span class="tg-badge-status ${v.status}">${statusLabel[v.status] || v.status}</span></td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
     }
 
     // ════════════════════════════════ RESET (super-admin)
