@@ -31,7 +31,7 @@ const LOGS_FILE = path.join(__dirname, 'logs.json');
 // ✅ TES SCORES RESTAURÉS (Utilisés comme base initiale fixe)
 const restoredCandidates = [
     { id: "1",  name: "LAWSON Thalia",          dept: "Anglais",     votes: 1  },
-    { id: "2",  name: "DOSSOU Gabriella",        dept: "DSLC",        votes: 4  },
+    { id: "2",  name: "DOSSOU Gabriella",        dept: "DSLC",        votes: 5  },
     { id: "3",  name: "GBOYOU Oriane",           dept: "Anglais",     votes: 2  },
     { id: "4",  name: "ALIASSIM Fridos",         dept: "Anglais",     votes: 38 },
     { id: "5",  name: "AHOUANDJINOU Gislaine",   dept: "Lettres Mod.", votes: 20 },
