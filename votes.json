@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1715893000001,
+    "candidate": "ALIASSIM Fridos",
+    "voteCount": 3,
+    "senderName": "Saisir Nom",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "*880*46*0191225602*300#",
+    "captureUrl": "",
+    "status": "pending"
+  },
+  {
+    "id": 1715893000002,
+    "candidate": "ALIASSIM Fridos",
+    "voteCount": 10,
+    "senderName": "Fariane OLAOMI",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "*880*46*0191225602*1000#",
+    "captureUrl": "",
+    "status": "pending"
+  },
+  {
+    "id": 1715893000003,
+    "candidate": "AGBEGNINOU Marie Josée",
+    "voteCount": 2,
+    "senderName": "Akodemin Armand Xavier",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "MTN",
+    "captureUrl": "",
+    "status": "pending"
+  },
+  {
+    "id": 1715893000004,
+    "candidate": "FANDONOUGBO Sabine",
+    "voteCount": 1,
+    "senderName": "Didier",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "SAB",
+    "captureUrl": "",
+    "status": "pending"
+  },
+  {
+    "id": 1715893000005,
+    "candidate": "LAWSON Thalia",
+    "voteCount": 1,
+    "senderName": "WAHAB ATANDA MOUSSE",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "*880*46*0150268641*100#",
+    "captureUrl": "",
+    "status": "pending"
+  },
+  {
+    "id": 1715893000006,
+    "candidate": "ALIASSIM Fridos",
+    "voteCount": 5,
+    "senderName": "SOMONIN Faloyé",
+    "senderPhone": "Saisir Numéro",
+    "txRef": "*880*46*0191225602*500#",
+    "captureUrl": "",
+    "status": "pending"
+  }
+]
