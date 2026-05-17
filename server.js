@@ -4,7 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// 1. INITIALISATION DE L'APPLICATION (Toujours en premier !)
+// 1. INITIALISATION DE L'APPLICATION
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,24 +23,50 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// SIMULATION DE BASE DE DONNÉES EN MÉMOIRE
-let candidates = [
-    { id: "1", name: "LAWSON Thalia", dept: "Anglais", votes: 0 },
-    { id: "2", name: "DOSSOU Gabriella", dept: "DSLC", votes: 0 },
-    { id: "3", name: "GBOYOU Oriane", dept: "Anglais", votes: 0 },
-    { id: "4", name: "ALIASSIM Fridos", dept: "Anglais", votes: 0 },
-    { id: "5", name: "AHOUANDJINOU Gislaine", dept: "Lettres Mod.", votes: 0 },
-    { id: "6", name: "ADJAÏ Bénédicte", dept: "Lettres Mod.", votes: 0 },
-    { id: "7", name: "FANDONOUGBO Sabine", dept: "Lettres Mod.", votes: 0 },
-    { id: "8", name: "HOUNTONDJI Lislaine", dept: "Anglais", votes: 0 },
-    { id: "9", name: "YACOUBOU NADIATH", dept: "Espagnol", votes: 0 },
-    { id: "10", name: "SOTON Odette", dept: "Lettres Mod.", votes: 0 },
-    { id: "11", name: "AGBEGNINOU Marie Josée", dept: "Lettres Mod.", votes: 0 }
+// 📁 CHEMINS DES FICHIERS DE SAUVEGARDE PHYSIQUE
+const CANDIDATES_FILE = path.join(__dirname, 'candidates.json');
+const VOTES_FILE = path.join(__dirname, 'votes.json');
+const LOGS_FILE = path.join(__dirname, 'logs.json');
+
+// ✅ TES SCORES RESTAURÉS (Utilisés comme base initiale fixe)
+const restoredCandidates = [
+    { id: "1",  name: "LAWSON Thalia",          dept: "Anglais",     votes: 1  },
+    { id: "2",  name: "DOSSOU Gabriella",        dept: "DSLC",        votes: 4  },
+    { id: "3",  name: "GBOYOU Oriane",           dept: "Anglais",     votes: 2  },
+    { id: "4",  name: "ALIASSIM Fridos",         dept: "Anglais",     votes: 38 },
+    { id: "5",  name: "AHOUANDJINOU Gislaine",   dept: "Lettres Mod.", votes: 20 },
+    { id: "6",  name: "ADJAÏ Bénédicte",         dept: "Lettres Mod.", votes: 93 },
+    { id: "7",  name: "FANDONOUGBO Sabine",      dept: "Lettres Mod.", votes: 27 },
+    { id: "8",  name: "HOUNTONDJI Lislaine",     dept: "Anglais",     votes: 0  },
+    { id: "9",  name: "YACOUBOU NADIATH",        dept: "Espagnol",    votes: 8  },
+    { id: "10", name: "SOTON Odette",            dept: "Lettres Mod.", votes: 36 },
+    { id: "11", name: "AGBEGNINOU Marie Josée",  dept: "Lettres Mod.", votes: 17 }
 ];
 
-let voteRequests = [];
-let usedTransactionIds = new Set();
-let logsHistory = [];
+// Fonctions utilitaires pour forcer l'écriture sur le disque dur
+function readData(filePath, defaultData) {
+    try {
+        if (!fs.existsSync(filePath)) {
+            fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+            return defaultData;
+        }
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (e) {
+        return defaultData;
+    }
+}
+
+function saveData(filePath, data) {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+// Chargement initial (sécurisé par fichier)
+let candidates = readData(CANDIDATES_FILE, restoredCandidates);
+let voteRequests = readData(VOTES_FILE, []);
+let logsHistory = readData(LOGS_FILE, []);
+
+// Reconstruction automatique du filtre anti-fraude
+let usedTransactionIds = new Set(voteRequests.map(v => v.txRef));
 
 // 1. API : Récupérer le classement pour la page d'accueil
 app.get('/api/ranking', (req, res) => {
@@ -49,11 +75,10 @@ app.get('/api/ranking', (req, res) => {
     res.json(ranking);
 });
 
-// 2. API : Soumission d'un vote par un utilisateur (AVEC ANTI-FRAUDE)
+// 2. API : Soumission d'un vote par un utilisateur
 app.post('/api/voter', upload.single('capture'), (req, res) => {
     const { candidate, voteCount, senderName, senderPhone, txRef } = req.body;
 
-    // 📢 LOGS EN DIRECT DANS LE TERMINAL VS CODE
     console.log("\n================ 🔥 NOUVEAU VOTE REÇU ==================");
     console.log(`👤 Payeur    : ${senderName || 'Inconnu'} (${senderPhone || 'Pas de numéro'})`);
     console.log(`👑 Candidate : ${candidate ? candidate.toUpperCase() : 'Non spécifiée'}`);
@@ -61,13 +86,10 @@ app.post('/api/voter', upload.single('capture'), (req, res) => {
     console.log(`🆔 ID Saisi  : ${txRef || 'Aucun'}`);
     console.log("========================================================");
 
-    if (!txRef) {
-        return res.status(400).json({ error: "L'ID de transaction est obligatoire." });
-    }
+    if (!txRef) return res.status(400).json({ error: "L'ID de transaction est obligatoire." });
 
     const cleanTxRef = txRef.toUpperCase().trim();
 
-    // SÉCURITÉ : BLOCAGE INSTANTANÉ SI L'ID A DÉJÀ ÉTÉ UTILISÉ
     if (usedTransactionIds.has(cleanTxRef)) {
         console.log(`🚨 Tentative de fraude bloquée ! ID doublon détecté : ${cleanTxRef}`);
         return res.status(400).json({ error: "Cet ID de transaction a déjà été soumis pour un vote." });
@@ -87,15 +109,17 @@ app.post('/api/voter', upload.single('capture'), (req, res) => {
     };
 
     voteRequests.push(newRequest);
+    saveData(VOTES_FILE, voteRequests); // <-- SAUVEGARDE STRICTE
+    
     res.sendStatus(200);
 });
 
-// 3. API : Liste complète pour le dashboard Admin
+// 3. API : Endpoints de lecture
 app.get('/api/admin-list', (req, res) => { res.json(voteRequests); });
 app.get('/api/candidates-list', (req, res) => { res.json(candidates); });
 app.get('/api/admin-logs', (req, res) => { res.json(logsHistory); });
 
-// 4. API : Action du Gestionnaire (Validation / Rejet + Traçabilité)
+// 4. API : Action du Gestionnaire / Super-Admin
 app.post('/api/admin-action', (req, res) => {
     const { id, action, controlRef, role } = req.body;
     const voteIdx = voteRequests.findIndex(v => v.id == id);
@@ -109,32 +133,34 @@ app.post('/api/admin-action', (req, res) => {
     if (action === 'validate') {
         vote.status = 'validated';
         vote.controlRef = controlRef.toUpperCase().trim();
-
         const cand = candidates.find(c => c.name === vote.candidate);
         if (cand) cand.votes += vote.voteCount;
-
+        
         logsHistory.unshift({
             time: timestamp,
             text: `✅ ${nameGestionnaire} a VALIDÉ ${vote.voteCount} vote(s) pour "${vote.candidate}". (ID Réf: ${vote.txRef})`
         });
-
     } else if (action === 'reject') {
         vote.status = 'rejected';
         usedTransactionIds.delete(vote.txRef);
-
+        
         logsHistory.unshift({
             time: timestamp,
             text: `❌ ${nameGestionnaire} a REJETÉ la demande de ${vote.voteCount} vote(s) pour "${vote.candidate}".`
         });
     }
 
+    // <-- PERSISTE LES FLUX APRÈS CHAQUE LOG OU VALIDATION
+    saveData(VOTES_FILE, voteRequests);
+    saveData(CANDIDATES_FILE, candidates);
+    saveData(LOGS_FILE, logsHistory);
+
     res.sendStatus(200);
 });
 
-// 5. API : Fonctions de gestion de la liste des candidates (CRUD Super-Admin)
+// 5. API : Modifications Administrateur de la liste des candidates
 app.post('/api/candidate-save', upload.single('photo'), (req, res) => {
     const { id, name, dept, votes } = req.body;
-    
     if (id) {
         const cand = candidates.find(c => c.id == id);
         if (cand) {
@@ -146,19 +172,19 @@ app.post('/api/candidate-save', upload.single('photo'), (req, res) => {
     } else {
         const newId = (candidates.length + 1).toString();
         candidates.push({
-            id: newId,
-            name,
-            dept,
+            id: newId, name, dept,
             votes: parseInt(votes),
             photoUrl: req.file ? `/uploads/${req.file.filename}` : ''
         });
     }
+    saveData(CANDIDATES_FILE, candidates);
     res.sendStatus(200);
 });
 
 app.delete('/api/candidate-delete', (req, res) => {
     const { id } = req.query;
     candidates = candidates.filter(c => c.id != id);
+    saveData(CANDIDATES_FILE, candidates);
     res.sendStatus(200);
 });
 
@@ -167,7 +193,11 @@ app.post('/api/admin-reset', (req, res) => {
     usedTransactionIds.clear();
     logsHistory = [];
     candidates.forEach(c => c.votes = 0);
+    
+    saveData(VOTES_FILE, []);
+    saveData(CANDIDATES_FILE, candidates);
+    saveData(LOGS_FILE, []);
     res.sendStatus(200);
 });
 
-app.listen(PORT, () => console.log(`🚀 Serveur sécurisé actif sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur sécurisé persistant actif sur le port ${PORT}`));
