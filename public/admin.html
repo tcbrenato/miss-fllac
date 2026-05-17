@@ -579,7 +579,7 @@
         const heureMap = {};
         votesData.forEach(v => {
             if (!v.submittedAt) return;
-            const heure = new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '00' });
+            const heure = new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             heureMap[heure] = (heureMap[heure] || 0) + (parseInt(v.voteCount) || 1);
         });
 
