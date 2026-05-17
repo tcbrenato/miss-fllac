@@ -426,14 +426,14 @@
             calculerIndicateursFinanciers(votesData, candidatesList);
 
             if (currentRole === "super-admin") {
-                const resLogs  = await fetch(`${BACKEND_URL}/api/admin-logs`);
-                const logsData = await resLogs.json();
-                renderCandidatesCrud();
-                buildChart();
-                buildHourlyChart();   // ✅ Graphique par heure
-                renderLogs(logsData);
-                calculatePanierMoyen();
-                renderVotesTable();
+    renderVotesTable(); // ✅ EN PREMIER
+    const resLogs  = await fetch(`${BACKEND_URL}/api/admin-logs`);
+    const logsData = await resLogs.json();
+    renderCandidatesCrud();
+    buildChart();
+    buildHourlyChart();
+    renderLogs(logsData);
+    calculatePanierMoyen();
                 const resStatus = await fetch(`${BACKEND_URL}/api/status`);
                 const statusData = await resStatus.json();
                 setMaintenanceUI(statusData.maintenance);
