@@ -543,7 +543,10 @@
 
     function renderLogs(logs) {
         const container = document.getElementById('logsContainer');
-        if (!logs.length) return;
+        if (!logs.length) {
+            container.innerHTML = `<p class="text-slate-600 italic">Aucune action...</p>`;
+            return;
+        }
         container.innerHTML = logs.map(l => `<div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>`).join('');
     }
 
