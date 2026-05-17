@@ -58,5 +58,15 @@
     "txRef": "*880*46*0191225602*500#",
     "captureUrl": "",
     "status": "pending"
+  },
+  {
+    "id": 1715893000007,
+    "candidate": "DOSSOU Gabriella",
+    "voteCount": 17,
+    "senderName": "ADJIBOÏTCHA Sébastien",
+    "senderPhone": "+2290197254842",
+    "txRef": "MNV",
+    "captureUrl": "",
+    "status": "pending"
   }
 ]
