@@ -2,19 +2,25 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
 
-// 1. INITIALISATION DE L'APPLICATION
+// ════════════════════════════════ INIT
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 2. CONFIGURATION DES MIDDLEWARES & CORS
+// ════════════════════════════════ SUPABASE
+const supabase = createClient(
+    'https://hfznofaxuokofbhxdfik.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhmem5vZmF4dW9rb2ZiaHhkZmlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4MzM3MjgsImV4cCI6MjA5NDQwOTcyOH0.hO8KuYknUVk4Q-UurQWd-mMN1wcNpLw_LqTSl6miNK8'
+);
+
+// ════════════════════════════════ MIDDLEWARES
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
 
-// Configuration de stockage des captures d'écran
+// ════════════════════════════════ MULTER
 const storage = multer.diskStorage({
     destination: 'uploads/',
     filename: (req, file, cb) => {
@@ -23,66 +29,41 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// 📁 CHEMINS DES FICHIERS DE SAUVEGARDE PHYSIQUE
-const CANDIDATES_FILE = path.join(__dirname, 'candidates.json');
-const VOTES_FILE = path.join(__dirname, 'votes.json');
-const LOGS_FILE = path.join(__dirname, 'logs.json');
-
-// ✅ TES SCORES RESTAURÉS (Utilisés comme base initiale fixe)
-const restoredCandidates = [
-    { id: "1",  name: "LAWSON Thalia",          dept: "Anglais",     votes: 1  },
-    { id: "2",  name: "DOSSOU Gabriella",        dept: "DSLC",        votes: 5  },
-    { id: "3",  name: "GBOYOU Oriane",           dept: "Anglais",     votes: 2  },
-    { id: "4",  name: "ALIASSIM Fridos",         dept: "Anglais",     votes: 38 },
-    { id: "5",  name: "AHOUANDJINOU Gislaine",   dept: "Lettres Mod.", votes: 20 },
-    { id: "6",  name: "ADJAÏ Bénédicte",         dept: "Lettres Mod.", votes: 93 },
-    { id: "7",  name: "FANDONOUGBO Sabine",      dept: "Lettres Mod.", votes: 27 },
-    { id: "8",  name: "HOUNTONDJI Lislaine",     dept: "Anglais",     votes: 0  },
-    { id: "9",  name: "YACOUBOU NADIATH",        dept: "Espagnol",    votes: 8  },
-    { id: "10", name: "SOTON Odette",            dept: "Lettres Mod.", votes: 36 },
-    { id: "11", name: "AGBEGNINOU Marie Josée",  dept: "Lettres Mod.", votes: 17 }
-];
-
-// Fonctions utilitaires pour forcer l'écriture sur le disque dur
-function readData(filePath, defaultData) {
-    try {
-        if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
-            return defaultData;
-        }
-        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    } catch (e) {
-        return defaultData;
-    }
+// ════════════════════════════════ HELPER LOG
+async function addLog(event_type, actor, candidate, vote_count, tx_ref, details) {
+    await supabase.from('logs').insert({
+        event_type,
+        actor,
+        candidate,
+        vote_count,
+        tx_ref,
+        details,
+        happened_at: new Date().toISOString()
+    });
 }
 
-function saveData(filePath, data) {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
+// ════════════════════════════════ 1. CLASSEMENT PUBLIC
+app.get('/api/ranking', async (req, res) => {
+    const { data, error } = await supabase
+        .from('candidates')
+        .select('name, votes')
+        .order('votes', { ascending: false });
 
-// Chargement initial (sécurisé par fichier)
-let candidates = readData(CANDIDATES_FILE, restoredCandidates);
-let voteRequests = readData(VOTES_FILE, []);
-let logsHistory = readData(LOGS_FILE, []);
+    if (error) return res.status(500).json({ error: error.message });
 
-// Reconstruction automatique du filtre anti-fraude
-let usedTransactionIds = new Set(voteRequests.map(v => v.txRef));
-
-// 1. API : Récupérer le classement pour la page d'accueil
-app.get('/api/ranking', (req, res) => {
     const ranking = {};
-    candidates.forEach(c => { ranking[c.name] = c.votes; });
+    data.forEach(c => { ranking[c.name] = c.votes; });
     res.json(ranking);
 });
 
-// 2. API : Soumission d'un vote par un utilisateur
-app.post('/api/voter', upload.single('capture'), (req, res) => {
+// ════════════════════════════════ 2. SOUMISSION D'UN VOTE
+app.post('/api/voter', upload.single('capture'), async (req, res) => {
     const { candidate, voteCount, senderName, senderPhone, txRef } = req.body;
 
     console.log("\n================ 🔥 NOUVEAU VOTE REÇU ==================");
     console.log(`👤 Payeur    : ${senderName || 'Inconnu'} (${senderPhone || 'Pas de numéro'})`);
     console.log(`👑 Candidate : ${candidate ? candidate.toUpperCase() : 'Non spécifiée'}`);
-    console.log(`🗳️ Nombre    : ${voteCount || 1} vote(s)`);
+    console.log(`🗳️  Nombre    : ${voteCount || 1} vote(s)`);
     console.log(`🆔 ID Saisi  : ${txRef || 'Aucun'}`);
     console.log("========================================================");
 
@@ -90,114 +71,191 @@ app.post('/api/voter', upload.single('capture'), (req, res) => {
 
     const cleanTxRef = txRef.toUpperCase().trim();
 
-    if (usedTransactionIds.has(cleanTxRef)) {
-        console.log(`🚨 Tentative de fraude bloquée ! ID doublon détecté : ${cleanTxRef}`);
-        return res.status(400).json({ error: "Cet ID de transaction a déjà été soumis pour un vote." });
+    // Vérifier doublon dans Supabase
+    const { data: existing } = await supabase
+        .from('votes')
+        .select('id')
+        .eq('tx_ref', cleanTxRef)
+        .single();
+
+    if (existing) {
+        console.log(`🚨 Tentative de fraude bloquée ! ID doublon : ${cleanTxRef}`);
+        await addLog('FRAUDE_BLOQUEE', senderName || 'Inconnu', candidate, parseInt(voteCount), cleanTxRef,
+            `Doublon détecté — ${senderName} (${senderPhone})`);
+        return res.status(400).json({ error: "Cet ID de transaction a déjà été soumis." });
     }
 
-    usedTransactionIds.add(cleanTxRef);
+    const captureUrl = req.file ? `/uploads/${req.file.filename}` : '';
 
-    const newRequest = {
+    const { error } = await supabase.from('votes').insert({
         id: Date.now(),
         candidate,
-        voteCount: parseInt(voteCount),
-        senderName,
-        senderPhone,
-        txRef: cleanTxRef,
-        captureUrl: req.file ? `/uploads/${req.file.filename}` : '',
-        status: 'pending'
-    };
+        vote_count: parseInt(voteCount),
+        sender_name: senderName,
+        sender_phone: senderPhone,
+        tx_ref: cleanTxRef,
+        capture_url: captureUrl,
+        status: 'pending',
+        submitted_at: new Date().toISOString()
+    });
 
-    voteRequests.push(newRequest);
-    saveData(VOTES_FILE, voteRequests); // <-- SAUVEGARDE STRICTE
-    
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Log de soumission
+    await addLog('VOTE_SOUMIS', senderName || 'Inconnu', candidate, parseInt(voteCount), cleanTxRef,
+        `${senderName} (${senderPhone}) a soumis ${voteCount} vote(s) pour ${candidate}`);
+
     res.sendStatus(200);
 });
 
-// 3. API : Endpoints de lecture
-app.get('/api/admin-list', (req, res) => { res.json(voteRequests); });
-app.get('/api/candidates-list', (req, res) => { res.json(candidates); });
-app.get('/api/admin-logs', (req, res) => { res.json(logsHistory); });
+// ════════════════════════════════ 3. LISTE ADMIN
+app.get('/api/admin-list', async (req, res) => {
+    const { data, error } = await supabase
+        .from('votes')
+        .select('*')
+        .order('submitted_at', { ascending: false });
 
-// 4. API : Action du Gestionnaire / Super-Admin
-app.post('/api/admin-action', (req, res) => {
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Adapter les noms de colonnes pour le frontend
+    const adapted = data.map(v => ({
+        id: v.id,
+        candidate: v.candidate,
+        voteCount: v.vote_count,
+        senderName: v.sender_name,
+        senderPhone: v.sender_phone,
+        txRef: v.tx_ref,
+        captureUrl: v.capture_url,
+        status: v.status,
+        controlRef: v.control_ref,
+        submittedAt: v.submitted_at,
+        validatedAt: v.validated_at,
+        rejectedAt: v.rejected_at,
+        actionBy: v.action_by
+    }));
+
+    res.json(adapted);
+});
+
+app.get('/api/candidates-list', async (req, res) => {
+    const { data, error } = await supabase
+        .from('candidates')
+        .select('*')
+        .order('votes', { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+});
+
+app.get('/api/admin-logs', async (req, res) => {
+    const { data, error } = await supabase
+        .from('logs')
+        .select('*')
+        .order('happened_at', { ascending: false })
+        .limit(100);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    // Adapter pour le frontend
+    const adapted = data.map(l => ({
+        time: new Date(l.happened_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        text: l.details,
+        event_type: l.event_type,
+        happened_at: l.happened_at
+    }));
+
+    res.json(adapted);
+});
+
+// ════════════════════════════════ 4. ACTION ADMIN
+app.post('/api/admin-action', async (req, res) => {
     const { id, action, controlRef, role } = req.body;
-    const voteIdx = voteRequests.findIndex(v => v.id == id);
 
-    if (voteIdx === -1) return res.status(404).send("Vote introuvable.");
-    
-    const vote = voteRequests[voteIdx];
-    const timestamp = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    const nameGestionnaire = role === 'super-admin' ? 'Super-Admin (Vous)' : 'Gestionnaire Mobile';
+    const { data: vote, error: fetchError } = await supabase
+        .from('votes')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (fetchError || !vote) return res.status(404).send("Vote introuvable.");
+
+    const nameGestionnaire = role === 'super-admin' ? 'Super-Admin' : 'Gestionnaire';
+    const now = new Date().toISOString();
 
     if (action === 'validate') {
-        vote.status = 'validated';
-        vote.controlRef = controlRef.toUpperCase().trim();
-        const cand = candidates.find(c => c.name === vote.candidate);
-        if (cand) cand.votes += vote.voteCount;
-        
-        logsHistory.unshift({
-            time: timestamp,
-            text: `✅ ${nameGestionnaire} a VALIDÉ ${vote.voteCount} vote(s) pour "${vote.candidate}". (ID Réf: ${vote.txRef})`
-        });
-    } else if (action === 'reject') {
-        vote.status = 'rejected';
-        usedTransactionIds.delete(vote.txRef);
-        
-        logsHistory.unshift({
-            time: timestamp,
-            text: `❌ ${nameGestionnaire} a REJETÉ la demande de ${vote.voteCount} vote(s) pour "${vote.candidate}".`
-        });
-    }
+        // Mettre à jour le statut du vote
+        await supabase.from('votes').update({
+            status: 'validated',
+            control_ref: controlRef.toUpperCase().trim(),
+            validated_at: now,
+            action_by: nameGestionnaire
+        }).eq('id', id);
 
-    // <-- PERSISTE LES FLUX APRÈS CHAQUE LOG OU VALIDATION
-    saveData(VOTES_FILE, voteRequests);
-    saveData(CANDIDATES_FILE, candidates);
-    saveData(LOGS_FILE, logsHistory);
+        // Incrémenter les votes de la candidate
+        const { data: cand } = await supabase
+            .from('candidates')
+            .select('votes')
+            .eq('name', vote.candidate)
+            .single();
+
+        if (cand) {
+            await supabase.from('candidates')
+                .update({
+                    votes: cand.votes + vote.vote_count,
+                    updated_at: now
+                })
+                .eq('name', vote.candidate);
+        }
+
+        await addLog('VOTE_VALIDE', nameGestionnaire, vote.candidate, vote.vote_count, vote.tx_ref,
+            `✅ ${nameGestionnaire} a VALIDÉ ${vote.vote_count} vote(s) pour "${vote.candidate}" — Payeur: ${vote.sender_name} (${vote.sender_phone}) — ID: ${vote.tx_ref}`);
+
+    } else if (action === 'reject') {
+        await supabase.from('votes').update({
+            status: 'rejected',
+            rejected_at: now,
+            action_by: nameGestionnaire
+        }).eq('id', id);
+
+        await addLog('VOTE_REJETE', nameGestionnaire, vote.candidate, vote.vote_count, vote.tx_ref,
+            `❌ ${nameGestionnaire} a REJETÉ ${vote.vote_count} vote(s) pour "${vote.candidate}" — Payeur: ${vote.sender_name} (${vote.sender_phone}) — ID: ${vote.tx_ref}`);
+    }
 
     res.sendStatus(200);
 });
 
-// 5. API : Modifications Administrateur de la liste des candidates
-app.post('/api/candidate-save', upload.single('photo'), (req, res) => {
+// ════════════════════════════════ 5. CRUD CANDIDATES
+app.post('/api/candidate-save', upload.single('photo'), async (req, res) => {
     const { id, name, dept, votes } = req.body;
+
     if (id) {
-        const cand = candidates.find(c => c.id == id);
-        if (cand) {
-            cand.name = name;
-            cand.dept = dept;
-            cand.votes = parseInt(votes);
-            if (req.file) cand.photoUrl = `/uploads/${req.file.filename}`;
-        }
+        const updateData = { name, dept, votes: parseInt(votes), updated_at: new Date().toISOString() };
+        if (req.file) updateData.photo_url = `/uploads/${req.file.filename}`;
+        await supabase.from('candidates').update(updateData).eq('id', id);
     } else {
-        const newId = (candidates.length + 1).toString();
-        candidates.push({
+        const { data: all } = await supabase.from('candidates').select('id');
+        const newId = (all.length + 1).toString();
+        await supabase.from('candidates').insert({
             id: newId, name, dept,
             votes: parseInt(votes),
-            photoUrl: req.file ? `/uploads/${req.file.filename}` : ''
+            photo_url: req.file ? `/uploads/${req.file.filename}` : ''
         });
     }
-    saveData(CANDIDATES_FILE, candidates);
     res.sendStatus(200);
 });
 
-app.delete('/api/candidate-delete', (req, res) => {
+app.delete('/api/candidate-delete', async (req, res) => {
     const { id } = req.query;
-    candidates = candidates.filter(c => c.id != id);
-    saveData(CANDIDATES_FILE, candidates);
+    await supabase.from('candidates').delete().eq('id', id);
     res.sendStatus(200);
 });
 
-app.post('/api/admin-reset', (req, res) => {
-    voteRequests = [];
-    usedTransactionIds.clear();
-    logsHistory = [];
-    candidates.forEach(c => c.votes = 0);
-    
-    saveData(VOTES_FILE, []);
-    saveData(CANDIDATES_FILE, candidates);
-    saveData(LOGS_FILE, []);
+// ════════════════════════════════ 6. RESET
+app.post('/api/admin-reset', async (req, res) => {
+    await supabase.from('votes').delete().neq('id', 0);
+    await supabase.from('logs').delete().neq('id', 0);
+    await supabase.from('candidates').update({ votes: 0 }).neq('id', '');
     res.sendStatus(200);
 });
 
-app.listen(PORT, () => console.log(`🚀 Serveur sécurisé persistant actif sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur Supabase actif sur le port ${PORT}`));
