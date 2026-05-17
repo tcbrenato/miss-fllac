@@ -18,16 +18,9 @@ const supabase = createClient(
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
 
-// ════════════════════════════════ MULTER
-const storage = multer.diskStorage({
-    destination: 'uploads/',
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
-});
-const upload = multer({ storage });
+// ════════════════════════════════ MULTER (mémoire uniquement, pas de disque)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // ════════════════════════════════ HELPER LOG
 async function addLog(event_type, actor, candidate, vote_count, tx_ref, details) {
@@ -76,16 +69,33 @@ app.post('/api/voter', upload.single('capture'), async (req, res) => {
         .from('votes')
         .select('id')
         .eq('tx_ref', cleanTxRef)
-        .single();
+        .maybeSingle();
 
     if (existing) {
         console.log(`🚨 Tentative de fraude bloquée ! ID doublon : ${cleanTxRef}`);
         await addLog('FRAUDE_BLOQUEE', senderName || 'Inconnu', candidate, parseInt(voteCount), cleanTxRef,
-            `Doublon détecté — ${senderName} (${senderPhone})`);
+            `🚨 Doublon détecté — ${senderName} (${senderPhone}) a tenté de soumettre l'ID : ${cleanTxRef}`);
         return res.status(400).json({ error: "Cet ID de transaction a déjà été soumis." });
     }
 
-    const captureUrl = req.file ? `/uploads/${req.file.filename}` : '';
+    // ✅ Upload capture vers Supabase Storage
+    let captureUrl = '';
+    if (req.file) {
+        const fileName = `${Date.now()}_${req.file.originalname.replace(/\s/g, '_')}`;
+        const { error: uploadError } = await supabase.storage
+            .from('captures')
+            .upload(fileName, req.file.buffer, {
+                contentType: req.file.mimetype,
+                upsert: false
+            });
+
+        if (!uploadError) {
+            const { data: urlData } = supabase.storage
+                .from('captures')
+                .getPublicUrl(fileName);
+            captureUrl = urlData.publicUrl;
+        }
+    }
 
     const { error } = await supabase.from('votes').insert({
         id: Date.now(),
@@ -101,9 +111,8 @@ app.post('/api/voter', upload.single('capture'), async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    // Log de soumission
     await addLog('VOTE_SOUMIS', senderName || 'Inconnu', candidate, parseInt(voteCount), cleanTxRef,
-        `${senderName} (${senderPhone}) a soumis ${voteCount} vote(s) pour ${candidate}`);
+        `📥 ${senderName} (${senderPhone}) a soumis ${voteCount} vote(s) pour ${candidate} — ID: ${cleanTxRef}`);
 
     res.sendStatus(200);
 });
@@ -117,7 +126,6 @@ app.get('/api/admin-list', async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    // Adapter les noms de colonnes pour le frontend
     const adapted = data.map(v => ({
         id: v.id,
         candidate: v.candidate,
@@ -125,7 +133,7 @@ app.get('/api/admin-list', async (req, res) => {
         senderName: v.sender_name,
         senderPhone: v.sender_phone,
         txRef: v.tx_ref,
-        captureUrl: v.capture_url,
+        captureUrl: v.capture_url,  // ✅ URL publique Supabase Storage
         status: v.status,
         controlRef: v.control_ref,
         submittedAt: v.submitted_at,
@@ -156,7 +164,6 @@ app.get('/api/admin-logs', async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    // Adapter pour le frontend
     const adapted = data.map(l => ({
         time: new Date(l.happened_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
         text: l.details,
@@ -183,7 +190,6 @@ app.post('/api/admin-action', async (req, res) => {
     const now = new Date().toISOString();
 
     if (action === 'validate') {
-        // Mettre à jour le statut du vote
         await supabase.from('votes').update({
             status: 'validated',
             control_ref: controlRef.toUpperCase().trim(),
@@ -191,7 +197,6 @@ app.post('/api/admin-action', async (req, res) => {
             action_by: nameGestionnaire
         }).eq('id', id);
 
-        // Incrémenter les votes de la candidate
         const { data: cand } = await supabase
             .from('candidates')
             .select('votes')
@@ -200,10 +205,7 @@ app.post('/api/admin-action', async (req, res) => {
 
         if (cand) {
             await supabase.from('candidates')
-                .update({
-                    votes: cand.votes + vote.vote_count,
-                    updated_at: now
-                })
+                .update({ votes: cand.votes + vote.vote_count, updated_at: now })
                 .eq('name', vote.candidate);
         }
 
@@ -228,9 +230,24 @@ app.post('/api/admin-action', async (req, res) => {
 app.post('/api/candidate-save', upload.single('photo'), async (req, res) => {
     const { id, name, dept, votes } = req.body;
 
+    let photoUrl = '';
+    if (req.file) {
+        const fileName = `photos/${Date.now()}_${req.file.originalname.replace(/\s/g, '_')}`;
+        const { error: uploadError } = await supabase.storage
+            .from('captures')
+            .upload(fileName, req.file.buffer, {
+                contentType: req.file.mimetype,
+                upsert: true
+            });
+        if (!uploadError) {
+            const { data: urlData } = supabase.storage.from('captures').getPublicUrl(fileName);
+            photoUrl = urlData.publicUrl;
+        }
+    }
+
     if (id) {
         const updateData = { name, dept, votes: parseInt(votes), updated_at: new Date().toISOString() };
-        if (req.file) updateData.photo_url = `/uploads/${req.file.filename}`;
+        if (photoUrl) updateData.photo_url = photoUrl;
         await supabase.from('candidates').update(updateData).eq('id', id);
     } else {
         const { data: all } = await supabase.from('candidates').select('id');
@@ -238,7 +255,7 @@ app.post('/api/candidate-save', upload.single('photo'), async (req, res) => {
         await supabase.from('candidates').insert({
             id: newId, name, dept,
             votes: parseInt(votes),
-            photo_url: req.file ? `/uploads/${req.file.filename}` : ''
+            photo_url: photoUrl
         });
     }
     res.sendStatus(200);
@@ -258,4 +275,4 @@ app.post('/api/admin-reset', async (req, res) => {
     res.sendStatus(200);
 });
 
-app.listen(PORT, () => console.log(`🚀 Serveur Supabase actif sur le port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur Supabase Storage actif sur le port ${PORT}`));
