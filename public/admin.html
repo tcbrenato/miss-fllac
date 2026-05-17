@@ -40,9 +40,53 @@
         .prog-fill  { height:100%; border-radius:2px; transition:width .8s cubic-bezier(.4,0,.2,1); width:0%; }
         .prog-fill.green { background:#10b981; }
         .prog-fill.amber { background:#f59e0b; }
+
+        /* ── Maintenance toggle ── */
+        .toggle-track {
+            width: 44px; height: 24px; border-radius: 12px;
+            background: #1e293b; border: 1px solid #334155;
+            position: relative; cursor: pointer; transition: background .3s;
+        }
+        .toggle-track.on { background: #ef4444; border-color: #ef4444; }
+        .toggle-thumb {
+            width: 18px; height: 18px; border-radius: 9px; background: #64748b;
+            position: absolute; top: 2px; left: 3px; transition: all .3s;
+        }
+        .toggle-track.on .toggle-thumb { left: 23px; background: white; }
+
+        /* ── Countdown bar ── */
+        .countdown-bar {
+            height: 2px; background: #1e293b; overflow: hidden;
+        }
+        .countdown-fill {
+            height: 100%; background: #f59e0b;
+            animation: countdown 5s linear infinite;
+        }
+        @keyframes countdown { from{width:100%} to{width:0%} }
+
+        /* ── Notification toast ── */
+        #toast {
+            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            background: #0f172a; border: 1px solid #10b981;
+            border-radius: 16px; padding: 14px 20px;
+            display: flex; align-items: center; gap-12px;
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(.4,0,.2,1);
+            max-width: 320px; gap: 12px;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
 <body class="bg-[#080c14] text-slate-100 min-h-screen antialiased">
+
+<!-- ════════ TOAST NOTIFICATION ════════ -->
+<div id="toast">
+    <span style="font-size:20px;">🗳️</span>
+    <div>
+        <p class="text-xs font-black text-emerald-400 uppercase tracking-wider">Nouveau vote reçu !</p>
+        <p class="text-[10px] text-slate-400 mt-0.5" id="toastText">—</p>
+    </div>
+</div>
 
 <!-- ════════════════════════════════════════════════ LOGIN -->
 <div id="loginScreen" class="fixed inset-0 bg-[#080c14] flex items-center justify-center z-50 p-4">
@@ -69,6 +113,11 @@
 <!-- ════════════════════════════════════════════════ PANEL -->
 <div id="panelScreen" class="hidden min-h-screen flex flex-col">
 
+    <!-- Barre de countdown refresh -->
+    <div class="countdown-bar">
+        <div class="countdown-fill" id="countdownFill"></div>
+    </div>
+
     <header class="sticky top-0 z-40 bg-[#080c14]/90 border-b border-slate-800/60 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-4 flex-wrap">
             <div class="flex items-center gap-3">
@@ -78,7 +127,15 @@
                     <span id="roleBadge" class="text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5">—</span>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Maintenance toggle (super-admin uniquement) -->
+                <div id="maintenanceToggle" class="hidden items-center gap-2">
+                    <span class="text-[9px] font-black uppercase tracking-wider text-slate-500">Maintenance</span>
+                    <div class="toggle-track" id="toggleTrack" onclick="toggleMaintenance()">
+                        <div class="toggle-thumb"></div>
+                    </div>
+                    <span class="text-[9px] font-black mono" id="toggleLabel" style="color:#64748b">OFF</span>
+                </div>
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mono">
                     <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-dot"></span>
                     <span id="lastRefresh">—</span>
@@ -91,7 +148,7 @@
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8 flex-1 w-full">
 
-        <!-- ─────────────────── COMPTEURS FINANCIERS — tous les rôles -->
+        <!-- ─────────────────── COMPTEURS FINANCIERS -->
         <div>
             <div class="flex items-center gap-2 mb-4">
                 <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
@@ -99,7 +156,6 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                <!-- ✅ Fonds validés = scores réels des candidates -->
                 <div class="stat-card card-glow-green bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fonds Validés</span>
@@ -110,7 +166,6 @@
                     <div class="prog-track"><div class="prog-fill green" id="barValides"></div></div>
                 </div>
 
-                <!-- ✅ Fonds en attente = nouvelles soumissions pending -->
                 <div class="stat-card card-glow-amber bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">En Attente</span>
@@ -206,7 +261,7 @@
             </div>
         </div>
 
-        <!-- ─────────────────── TABLEAU VALIDATION — super-admin + gestionnaire -->
+        <!-- ─────────────────── TABLEAU VALIDATION -->
         <div id="validationSection">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
@@ -236,7 +291,7 @@
             </div>
         </div>
 
-        <!-- ─────────────────── GRAND LIVRE TG — lecture seule -->
+        <!-- ─────────────────── GRAND LIVRE TG -->
         <div id="tgSection" class="hidden space-y-6">
             <div class="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4 flex items-center gap-3">
                 <span class="text-lg">📋</span>
@@ -296,13 +351,48 @@
 <script>
     const BACKEND_URL = "https://miss-fllac-backend.onrender.com";
 
-    let currentRole    = "";
-    let votesData      = [];
-    let candidatesList = [];
-    let chartInstance  = null;
-    let tgChartCand    = null;
-    let tgChartStat    = null;
-    let tgFilter       = 'all';
+    let currentRole      = "";
+    let votesData        = [];
+    let candidatesList   = [];
+    let chartInstance    = null;
+    let tgChartCand      = null;
+    let tgChartStat      = null;
+    let tgFilter         = 'all';
+    let previousPending  = 0;   // Pour détecter les nouveaux votes
+    let maintenanceState = false;
+    let autoRefreshTimer = null;
+
+    // ════════════════════════════════ SON DE NOTIFICATION
+    function playNotificationSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const o1 = ctx.createOscillator();
+            const o2 = ctx.createOscillator();
+            const g  = ctx.createGain();
+
+            o1.connect(g); o2.connect(g); g.connect(ctx.destination);
+
+            o1.frequency.value = 880;
+            o2.frequency.value = 1100;
+            o1.type = 'sine'; o2.type = 'sine';
+
+            g.gain.setValueAtTime(0.3, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+            o1.start(ctx.currentTime);
+            o2.start(ctx.currentTime + 0.1);
+            o1.stop(ctx.currentTime + 0.4);
+            o2.stop(ctx.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    // ════════════════════════════════ TOAST NOTIFICATION
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastText').innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 4000);
+    }
 
     // ════════════════════════════════ LOGIN
     function login() {
@@ -314,6 +404,8 @@
             currentRole = "super-admin";
             setBadge("Super-Admin", "badge-superadmin");
             document.getElementById('superAdminSection').classList.remove('hidden');
+            document.getElementById('maintenanceToggle').classList.remove('hidden');
+            document.getElementById('maintenanceToggle').style.display = 'flex';
         } else if (pass === "MISS2026FLLAC") {
             currentRole = "gestionnaire";
             setBadge("Gestionnaire", "badge-gestionnaire");
@@ -332,6 +424,11 @@
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('panelScreen').classList.remove('hidden');
         loadDashboard();
+
+        // ✅ AUTO-REFRESH toutes les 5 secondes
+        autoRefreshTimer = setInterval(() => {
+            loadDashboard();
+        }, 5000);
     }
 
     function setBadge(label, cls) {
@@ -347,10 +444,20 @@
                 fetch(`${BACKEND_URL}/api/admin-list`),
                 fetch(`${BACKEND_URL}/api/candidates-list`)
             ]);
-            votesData      = await resVotes.json();
-            candidatesList = await resCand.json();
+            const newVotesData  = await resVotes.json();
+            candidatesList      = await resCand.json();
 
-            // ✅ Compteurs financiers : visibles par TOUS
+            // ✅ DÉTECTION NOUVEAU VOTE + NOTIFICATION SONORE
+            const newPending = newVotesData.filter(v => v.status === 'pending').length;
+            if (newPending > previousPending && previousPending !== 0) {
+                const diff = newPending - previousPending;
+                const dernierVote = newVotesData.find(v => v.status === 'pending');
+                playNotificationSound();
+                showToast(`${dernierVote?.senderName || 'Quelqu\'un'} → ${dernierVote?.candidate} (${dernierVote?.voteCount} vote(s))`);
+            }
+            previousPending = newPending;
+            votesData = newVotesData;
+
             calculerIndicateursFinanciers(votesData, candidatesList);
 
             if (currentRole === "super-admin") {
@@ -361,6 +468,10 @@
                 renderLogs(logsData);
                 calculatePanierMoyen();
                 renderVotesTable();
+                // Sync état maintenance
+                const resStatus = await fetch(`${BACKEND_URL}/api/status`);
+                const statusData = await resStatus.json();
+                setMaintenanceUI(statusData.maintenance);
             }
 
             if (currentRole === "gestionnaire") {
@@ -378,33 +489,52 @@
         } catch (e) { console.error("Erreur de chargement :", e); }
     }
 
-    // ════════════════════════════════ ✅ COMPTEURS FINANCIERS CORRIGÉS
+    // ════════════════════════════════ MAINTENANCE TOGGLE
+    function setMaintenanceUI(active) {
+        maintenanceState = active;
+        const track = document.getElementById('toggleTrack');
+        const label = document.getElementById('toggleLabel');
+        if (active) {
+            track.classList.add('on');
+            label.innerText = 'ON';
+            label.style.color = '#ef4444';
+        } else {
+            track.classList.remove('on');
+            label.innerText = 'OFF';
+            label.style.color = '#64748b';
+        }
+    }
+
+    async function toggleMaintenance() {
+        const newState = !maintenanceState;
+        if (newState && !confirm("Activer la maintenance ? Les votes seront bloqués côté serveur.")) return;
+        setMaintenanceUI(newState);
+        await fetch(`${BACKEND_URL}/api/maintenance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ active: newState })
+        });
+    }
+
+    // ════════════════════════════════ COMPTEURS FINANCIERS
     function calculerIndicateursFinanciers(votesData, candidatesData) {
-        // ✅ Fonds validés = somme réelle des votes des candidates × 100 F
         const totalVotesValides = candidatesData.reduce((s, c) => s + (parseInt(c.votes) || 0), 0);
-        const totalValide = totalVotesValides * 100;
-
-        // ✅ Fonds en attente = nouvelles soumissions pending depuis Supabase
-        const enAttente  = votesData.filter(v => v.status === 'pending');
-        const totalAttente = enAttente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
-
-        // ✅ Fraudes rejetées
-        const rejetes = votesData.filter(v => v.status === 'rejected');
-
-        const totalGeneral = (totalValide + totalAttente) || 1;
+        const totalValide       = totalVotesValides * 100;
+        const enAttente         = votesData.filter(v => v.status === 'pending');
+        const totalAttente      = enAttente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
+        const rejetes           = votesData.filter(v => v.status === 'rejected');
+        const totalGeneral      = (totalValide + totalAttente) || 1;
 
         document.getElementById('fondsValides').innerText  = `${totalValide.toLocaleString('fr-FR')} F CFA`;
         document.getElementById('countValides').innerText  = `${totalVotesValides} vote(s) validé(s)`;
         document.getElementById('barValides').style.width  = Math.round(totalValide / totalGeneral * 100) + '%';
-
         document.getElementById('fondsAttente').innerText  = `${totalAttente.toLocaleString('fr-FR')} F CFA`;
         document.getElementById('countAttente').innerText  = `${enAttente.length} requête(s) en attente`;
         document.getElementById('barAttente').style.width  = Math.round(totalAttente / totalGeneral * 100) + '%';
-
         document.getElementById('totalRejetes').innerText  = rejetes.length;
     }
 
-    // ════════════════════════════════ PANIER MOYEN (super-admin)
+    // ════════════════════════════════ PANIER MOYEN
     function calculatePanierMoyen() {
         const valides    = votesData.filter(v => v.status === 'validated');
         const totalVotes = valides.reduce((s, v) => s + (parseInt(v.voteCount) || 0), 0);
@@ -412,7 +542,7 @@
         document.getElementById('finAverageCash').innerText = `${avg.toLocaleString('fr-FR')} F CFA`;
     }
 
-    // ════════════════════════════════ CRUD CANDIDATES (super-admin)
+    // ════════════════════════════════ CRUD CANDIDATES
     function renderCandidatesCrud() {
         const container = document.getElementById('candidatesCrudList');
         if (!candidatesList.length) {
@@ -468,7 +598,7 @@
         }
     }
 
-    // ════════════════════════════════ LOGS (super-admin)
+    // ════════════════════════════════ LOGS
     function renderLogs(logs) {
         const container = document.getElementById('logsContainer');
         if (!logs.length) return;
@@ -479,7 +609,7 @@
         `).join('');
     }
 
-    // ════════════════════════════════ GRAPHIQUE (super-admin)
+    // ════════════════════════════════ GRAPHIQUE
     function buildChart() {
         const ctx = document.getElementById('votesChart').getContext('2d');
         if (chartInstance) chartInstance.destroy();
@@ -500,7 +630,7 @@
         });
     }
 
-    // ════════════════════════════════ TABLEAU VALIDATION (super-admin + gestionnaire)
+    // ════════════════════════════════ TABLEAU VALIDATION
     function renderVotesTable() {
         const tbody   = document.getElementById('votesTableBody');
         const pending = votesData.filter(v => v.status === 'pending');
@@ -630,7 +760,7 @@
         }).join('');
     }
 
-    // ════════════════════════════════ RESET (super-admin)
+    // ════════════════════════════════ RESET
     async function resetPlatform() {
         if (confirm("Tout réinitialiser ? Action irréversible.") && prompt("Confirmez avec le mot de passe :") === "VOTEGESTION") {
             await fetch(`${BACKEND_URL}/api/admin-reset`, { method: 'POST' });

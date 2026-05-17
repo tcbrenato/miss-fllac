@@ -19,7 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ════════════════════════════════ MULTER (mémoire uniquement, pas de disque)
+// ════════════════════════════════ MULTER (mémoire uniquement)
 const upload = multer({ storage: multer.memoryStorage() });
 
 // ════════════════════════════════ HELPER LOG
@@ -33,6 +33,16 @@ async function addLog(event_type, actor, candidate, vote_count, tx_ref, details)
         details,
         happened_at: new Date().toISOString()
     });
+}
+
+// ════════════════════════════════ HELPER : vérifier maintenance
+async function isMaintenanceActive() {
+    const { data } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'maintenance')
+        .single();
+    return data?.value === 'true';
 }
 
 // ════════════════════════════════ 1. CLASSEMENT PUBLIC
@@ -49,8 +59,20 @@ app.get('/api/ranking', async (req, res) => {
     res.json(ranking);
 });
 
-// ════════════════════════════════ 2. SOUMISSION D'UN VOTE
+// ════════════════════════════════ 2. STATUT MAINTENANCE (pour le frontend)
+app.get('/api/status', async (req, res) => {
+    const maintenance = await isMaintenanceActive();
+    res.json({ maintenance });
+});
+
+// ════════════════════════════════ 3. SOUMISSION D'UN VOTE
 app.post('/api/voter', upload.single('capture'), async (req, res) => {
+    // 🔒 BLOCAGE SI MAINTENANCE ACTIVE
+    const maintenance = await isMaintenanceActive();
+    if (maintenance) {
+        return res.status(503).json({ error: "🔧 La plateforme de vote est temporairement suspendue. Réouverture prochaine !" });
+    }
+
     const { candidate, voteCount, senderName, senderPhone, txRef } = req.body;
 
     console.log("\n================ 🔥 NOUVEAU VOTE REÇU ==================");
@@ -117,7 +139,7 @@ app.post('/api/voter', upload.single('capture'), async (req, res) => {
     res.sendStatus(200);
 });
 
-// ════════════════════════════════ 3. LISTE ADMIN
+// ════════════════════════════════ 4. LISTE ADMIN
 app.get('/api/admin-list', async (req, res) => {
     const { data, error } = await supabase
         .from('votes')
@@ -133,7 +155,7 @@ app.get('/api/admin-list', async (req, res) => {
         senderName: v.sender_name,
         senderPhone: v.sender_phone,
         txRef: v.tx_ref,
-        captureUrl: v.capture_url,  // ✅ URL publique Supabase Storage
+        captureUrl: v.capture_url,
         status: v.status,
         controlRef: v.control_ref,
         submittedAt: v.submitted_at,
@@ -174,7 +196,7 @@ app.get('/api/admin-logs', async (req, res) => {
     res.json(adapted);
 });
 
-// ════════════════════════════════ 4. ACTION ADMIN
+// ════════════════════════════════ 5. ACTION ADMIN
 app.post('/api/admin-action', async (req, res) => {
     const { id, action, controlRef, role } = req.body;
 
@@ -226,7 +248,17 @@ app.post('/api/admin-action', async (req, res) => {
     res.sendStatus(200);
 });
 
-// ════════════════════════════════ 5. CRUD CANDIDATES
+// ════════════════════════════════ 6. TOGGLE MAINTENANCE (super-admin)
+app.post('/api/maintenance', async (req, res) => {
+    const { active } = req.body;
+    await supabase
+        .from('settings')
+        .update({ value: active ? 'true' : 'false' })
+        .eq('key', 'maintenance');
+    res.json({ maintenance: active });
+});
+
+// ════════════════════════════════ 7. CRUD CANDIDATES
 app.post('/api/candidate-save', upload.single('photo'), async (req, res) => {
     const { id, name, dept, votes } = req.body;
 
@@ -267,7 +299,14 @@ app.delete('/api/candidate-delete', async (req, res) => {
     res.sendStatus(200);
 });
 
-// ════════════════════════════════ 6. RESET
+// ════════════════════════════════ 8. RESET
+app.post('/api-reset', async (req, res) => {
+    await supabase.from('votes').delete().neq('id', 0);
+    await supabase.from('logs').delete().neq('id', 0);
+    await supabase.from('candidates').update({ votes: 0 }).neq('id', '');
+    res.sendStatus(200);
+});
+
 app.post('/api/admin-reset', async (req, res) => {
     await supabase.from('votes').delete().neq('id', 0);
     await supabase.from('logs').delete().neq('id', 0);
