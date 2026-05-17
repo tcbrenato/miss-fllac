@@ -6,6 +6,7 @@
     <title>PANEL DE CONTRÔLE MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Syne', sans-serif; }
@@ -40,46 +41,20 @@
         .prog-fill  { height:100%; border-radius:2px; transition:width .8s cubic-bezier(.4,0,.2,1); width:0%; }
         .prog-fill.green { background:#10b981; }
         .prog-fill.amber { background:#f59e0b; }
-
-        /* ── Maintenance toggle ── */
-        .toggle-track {
-            width: 44px; height: 24px; border-radius: 12px;
-            background: #1e293b; border: 1px solid #334155;
-            position: relative; cursor: pointer; transition: background .3s;
-        }
-        .toggle-track.on { background: #ef4444; border-color: #ef4444; }
-        .toggle-thumb {
-            width: 18px; height: 18px; border-radius: 9px; background: #64748b;
-            position: absolute; top: 2px; left: 3px; transition: all .3s;
-        }
-        .toggle-track.on .toggle-thumb { left: 23px; background: white; }
-
-        /* ── Countdown bar ── */
-        .countdown-bar {
-            height: 2px; background: #1e293b; overflow: hidden;
-        }
-        .countdown-fill {
-            height: 100%; background: #f59e0b;
-            animation: countdown 5s linear infinite;
-        }
+        .toggle-track { width:44px; height:24px; border-radius:12px; background:#1e293b; border:1px solid #334155; position:relative; cursor:pointer; transition:background .3s; }
+        .toggle-track.on { background:#ef4444; border-color:#ef4444; }
+        .toggle-thumb { width:18px; height:18px; border-radius:9px; background:#64748b; position:absolute; top:2px; left:3px; transition:all .3s; }
+        .toggle-track.on .toggle-thumb { left:23px; background:white; }
+        .countdown-bar { height:2px; background:#1e293b; overflow:hidden; }
+        .countdown-fill { height:100%; background:#f59e0b; animation:countdown 5s linear infinite; }
         @keyframes countdown { from{width:100%} to{width:0%} }
-
-        /* ── Notification toast ── */
-        #toast {
-            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-            background: #0f172a; border: 1px solid #10b981;
-            border-radius: 16px; padding: 14px 20px;
-            display: flex; align-items: center; gap-12px;
-            transform: translateY(100px); opacity: 0;
-            transition: all 0.4s cubic-bezier(.4,0,.2,1);
-            max-width: 320px; gap: 12px;
-        }
-        #toast.show { transform: translateY(0); opacity: 1; }
+        #toast { position:fixed; bottom:24px; right:24px; z-index:9999; background:#0f172a; border:1px solid #10b981; border-radius:16px; padding:14px 20px; display:flex; align-items:center; gap:12px; transform:translateY(100px); opacity:0; transition:all 0.4s cubic-bezier(.4,0,.2,1); max-width:320px; }
+        #toast.show { transform:translateY(0); opacity:1; }
+        .export-btn { display:inline-flex; align-items:center; gap:6px; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:6px 14px; border-radius:10px; cursor:pointer; transition:all .2s; border:none; font-family:inherit; }
     </style>
 </head>
 <body class="bg-[#080c14] text-slate-100 min-h-screen antialiased">
 
-<!-- ════════ TOAST NOTIFICATION ════════ -->
 <div id="toast">
     <span style="font-size:20px;">🗳️</span>
     <div>
@@ -88,7 +63,7 @@
     </div>
 </div>
 
-<!-- ════════════════════════════════════════════════ LOGIN -->
+<!-- LOGIN -->
 <div id="loginScreen" class="fixed inset-0 bg-[#080c14] flex items-center justify-center z-50 p-4">
     <div class="relative w-full max-w-sm">
         <div class="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -102,21 +77,16 @@
             <input type="password" id="adminPass" placeholder="Mot de passe d'accès"
                 class="w-full p-4 bg-slate-950 border border-slate-800 rounded-2xl text-center text-white mono text-sm outline-none focus:border-amber-500 transition-colors placeholder-slate-600"
                 onkeydown="if(event.key==='Enter') login()">
-            <button onclick="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-2xl uppercase tracking-widest text-sm active:scale-95 transition-all">
-                Accéder →
-            </button>
+            <button onclick="login()" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-4 rounded-2xl uppercase tracking-widest text-sm active:scale-95 transition-all">Accéder →</button>
             <p id="loginError" class="text-red-400 text-xs font-bold hidden">Mot de passe incorrect.</p>
         </div>
     </div>
 </div>
 
-<!-- ════════════════════════════════════════════════ PANEL -->
+<!-- PANEL -->
 <div id="panelScreen" class="hidden min-h-screen flex flex-col">
 
-    <!-- Barre de countdown refresh -->
-    <div class="countdown-bar">
-        <div class="countdown-fill" id="countdownFill"></div>
-    </div>
+    <div class="countdown-bar"><div class="countdown-fill"></div></div>
 
     <header class="sticky top-0 z-40 bg-[#080c14]/90 border-b border-slate-800/60 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center gap-4 flex-wrap">
@@ -128,12 +98,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 flex-wrap">
-                <!-- Maintenance toggle (super-admin uniquement) -->
                 <div id="maintenanceToggle" class="hidden items-center gap-2">
                     <span class="text-[9px] font-black uppercase tracking-wider text-slate-500">Maintenance</span>
-                    <div class="toggle-track" id="toggleTrack" onclick="toggleMaintenance()">
-                        <div class="toggle-thumb"></div>
-                    </div>
+                    <div class="toggle-track" id="toggleTrack" onclick="toggleMaintenance()"><div class="toggle-thumb"></div></div>
                     <span class="text-[9px] font-black mono" id="toggleLabel" style="color:#64748b">OFF</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-[10px] text-slate-500 mono">
@@ -148,14 +115,13 @@
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8 flex-1 w-full">
 
-        <!-- ─────────────────── COMPTEURS FINANCIERS -->
+        <!-- COMPTEURS FINANCIERS -->
         <div>
             <div class="flex items-center gap-2 mb-4">
                 <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
                 <h2 class="text-xs font-black uppercase tracking-widest text-slate-400">Tableau de Bord Financier</h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
                 <div class="stat-card card-glow-green bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fonds Validés</span>
@@ -165,7 +131,6 @@
                     <p class="text-[10px] text-slate-600 mt-2" id="countValides">0 vote(s) validé(s)</p>
                     <div class="prog-track"><div class="prog-fill green" id="barValides"></div></div>
                 </div>
-
                 <div class="stat-card card-glow-amber bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">En Attente</span>
@@ -175,7 +140,6 @@
                     <p class="text-[10px] text-slate-600 mt-2" id="countAttente">0 requête(s)</p>
                     <div class="prog-track"><div class="prog-fill amber" id="barAttente"></div></div>
                 </div>
-
                 <div class="stat-card card-glow-red bg-slate-900 border border-slate-800 p-5 rounded-2xl">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Fraudes Rejetées</span>
@@ -184,7 +148,6 @@
                     <p class="text-2xl font-black text-red-400 mono leading-none" id="totalRejetes">0</p>
                     <p class="text-[10px] text-slate-600 mt-2">Requête(s) bloquée(s)</p>
                 </div>
-
                 <div class="stat-card card-glow-blue bg-slate-900 border border-slate-800 p-5 rounded-2xl" id="cardPanierMoyen">
                     <div class="flex items-start justify-between mb-3">
                         <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">Panier Moyen</span>
@@ -193,11 +156,10 @@
                     <p class="text-2xl font-black text-blue-400 mono leading-none" id="finAverageCash">0 F</p>
                     <p class="text-[10px] text-slate-600 mt-2">Par transaction validée</p>
                 </div>
-
             </div>
         </div>
 
-        <!-- ─────────────────── SUPER-ADMIN UNIQUEMENT -->
+        <!-- SUPER-ADMIN -->
         <div id="superAdminSection" class="hidden space-y-6">
             <div class="flex items-center gap-2">
                 <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
@@ -237,7 +199,9 @@
                     <div class="overflow-y-auto flex-1 space-y-1 pr-1" id="candidatesCrudList"></div>
                 </div>
             </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Graphique votes par candidate -->
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl md:col-span-2 flex flex-col">
                     <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Tendances des Votes</h3>
                     <div class="flex-1 min-h-[180px]"><canvas id="votesChart"></canvas></div>
@@ -253,15 +217,22 @@
                     </div>
                     <div class="bg-slate-900 border border-red-500/10 p-5 rounded-2xl text-center">
                         <p class="text-[9px] text-slate-500 uppercase font-black tracking-wider mb-3">Zone Critique</p>
-                        <button onclick="resetPlatform()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all">
-                            ⚠️ Reset Plateforme
-                        </button>
+                        <button onclick="resetPlatform()" class="w-full bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 font-bold py-2.5 rounded-xl text-[10px] uppercase tracking-wider transition-all">⚠️ Reset Plateforme</button>
                     </div>
                 </div>
             </div>
+
+            <!-- ✅ NOUVEAU : Graphique évolution par heure -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Évolution des Votes par Heure</h3>
+                    <span class="text-[9px] text-slate-600 mono">Votes soumis dans le temps</span>
+                </div>
+                <div class="h-48"><canvas id="hourlyChart"></canvas></div>
+            </div>
         </div>
 
-        <!-- ─────────────────── TABLEAU VALIDATION -->
+        <!-- TABLEAU VALIDATION -->
         <div id="validationSection">
             <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
@@ -291,7 +262,7 @@
             </div>
         </div>
 
-        <!-- ─────────────────── GRAND LIVRE TG -->
+        <!-- GRAND LIVRE TG -->
         <div id="tgSection" class="hidden space-y-6">
             <div class="bg-emerald-500/5 border border-emerald-500/15 rounded-xl p-4 flex items-center gap-3">
                 <span class="text-lg">📋</span>
@@ -300,6 +271,17 @@
                     <p class="text-[11px] text-slate-400 mt-0.5">Supervision financière uniquement. Aucune action possible depuis cet espace.</p>
                 </div>
             </div>
+
+            <!-- ✅ NOUVEAU : Boutons Export CSV + PDF -->
+            <div class="flex gap-3 flex-wrap">
+                <button onclick="exportCSV()" class="export-btn bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/20 transition-all">
+                    📊 Export CSV
+                </button>
+                <button onclick="exportPDF()" class="export-btn bg-blue-600/20 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/20 transition-all">
+                    📄 Rapport PDF
+                </button>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
                     <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-4">Votes par Candidate</h3>
@@ -310,6 +292,7 @@
                     <div class="h-52"><canvas id="tgChartStatuts"></canvas></div>
                 </div>
             </div>
+
             <div>
                 <div class="flex items-center gap-2 mb-4">
                     <div class="w-1 h-5 bg-emerald-500 rounded-full"></div>
@@ -350,43 +333,33 @@
 
 <script>
     const BACKEND_URL = "https://miss-fllac-backend.onrender.com";
-
     let currentRole      = "";
     let votesData        = [];
     let candidatesList   = [];
     let chartInstance    = null;
+    let hourlyChartInst  = null;
     let tgChartCand      = null;
     let tgChartStat      = null;
     let tgFilter         = 'all';
-    let previousPending  = 0;   // Pour détecter les nouveaux votes
+    let previousPending  = 0;
     let maintenanceState = false;
     let autoRefreshTimer = null;
 
-    // ════════════════════════════════ SON DE NOTIFICATION
+    // ══ SON
     function playNotificationSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const o1 = ctx.createOscillator();
-            const o2 = ctx.createOscillator();
-            const g  = ctx.createGain();
-
+            const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
             o1.connect(g); o2.connect(g); g.connect(ctx.destination);
-
-            o1.frequency.value = 880;
-            o2.frequency.value = 1100;
+            o1.frequency.value = 880; o2.frequency.value = 1100;
             o1.type = 'sine'; o2.type = 'sine';
-
             g.gain.setValueAtTime(0.3, ctx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-
-            o1.start(ctx.currentTime);
-            o2.start(ctx.currentTime + 0.1);
-            o1.stop(ctx.currentTime + 0.4);
-            o2.stop(ctx.currentTime + 0.5);
+            o1.start(ctx.currentTime); o2.start(ctx.currentTime + 0.1);
+            o1.stop(ctx.currentTime + 0.4); o2.stop(ctx.currentTime + 0.5);
         } catch(e) {}
     }
 
-    // ════════════════════════════════ TOAST NOTIFICATION
     function showToast(message) {
         const toast = document.getElementById('toast');
         document.getElementById('toastText').innerText = message;
@@ -394,12 +367,11 @@
         setTimeout(() => toast.classList.remove('show'), 4000);
     }
 
-    // ════════════════════════════════ LOGIN
+    // ══ LOGIN
     function login() {
         const pass = document.getElementById('adminPass').value.trim();
         const err  = document.getElementById('loginError');
         err.classList.add('hidden');
-
         if (pass === "VOTEGESTION") {
             currentRole = "super-admin";
             setBadge("Super-Admin", "badge-superadmin");
@@ -420,15 +392,10 @@
             err.classList.remove('hidden');
             return;
         }
-
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('panelScreen').classList.remove('hidden');
         loadDashboard();
-
-        // ✅ AUTO-REFRESH toutes les 5 secondes
-        autoRefreshTimer = setInterval(() => {
-            loadDashboard();
-        }, 5000);
+        autoRefreshTimer = setInterval(() => loadDashboard(), 5000);
     }
 
     function setBadge(label, cls) {
@@ -437,20 +404,18 @@
         b.className = `text-[9px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md inline-block mt-0.5 ${cls}`;
     }
 
-    // ════════════════════════════════ CHARGEMENT
+    // ══ CHARGEMENT
     async function loadDashboard() {
         try {
             const [resVotes, resCand] = await Promise.all([
                 fetch(`${BACKEND_URL}/api/admin-list`),
                 fetch(`${BACKEND_URL}/api/candidates-list`)
             ]);
-            const newVotesData  = await resVotes.json();
-            candidatesList      = await resCand.json();
+            const newVotesData = await resVotes.json();
+            candidatesList     = await resCand.json();
 
-            // ✅ DÉTECTION NOUVEAU VOTE + NOTIFICATION SONORE
             const newPending = newVotesData.filter(v => v.status === 'pending').length;
             if (newPending > previousPending && previousPending !== 0) {
-                const diff = newPending - previousPending;
                 const dernierVote = newVotesData.find(v => v.status === 'pending');
                 playNotificationSound();
                 showToast(`${dernierVote?.senderName || 'Quelqu\'un'} → ${dernierVote?.candidate} (${dernierVote?.voteCount} vote(s))`);
@@ -465,44 +430,29 @@
                 const logsData = await resLogs.json();
                 renderCandidatesCrud();
                 buildChart();
+                buildHourlyChart();   // ✅ Graphique par heure
                 renderLogs(logsData);
                 calculatePanierMoyen();
                 renderVotesTable();
-                // Sync état maintenance
                 const resStatus = await fetch(`${BACKEND_URL}/api/status`);
                 const statusData = await resStatus.json();
                 setMaintenanceUI(statusData.maintenance);
             }
-
-            if (currentRole === "gestionnaire") {
-                renderVotesTable();
-            }
-
-            if (currentRole === "tg") {
-                buildTgCharts();
-                renderTgLedger();
-            }
+            if (currentRole === "gestionnaire") renderVotesTable();
+            if (currentRole === "tg") { buildTgCharts(); renderTgLedger(); }
 
             document.getElementById('lastRefresh').innerText =
                 new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-
-        } catch (e) { console.error("Erreur de chargement :", e); }
+        } catch (e) { console.error("Erreur :", e); }
     }
 
-    // ════════════════════════════════ MAINTENANCE TOGGLE
+    // ══ MAINTENANCE
     function setMaintenanceUI(active) {
         maintenanceState = active;
         const track = document.getElementById('toggleTrack');
         const label = document.getElementById('toggleLabel');
-        if (active) {
-            track.classList.add('on');
-            label.innerText = 'ON';
-            label.style.color = '#ef4444';
-        } else {
-            track.classList.remove('on');
-            label.innerText = 'OFF';
-            label.style.color = '#64748b';
-        }
+        if (active) { track.classList.add('on'); label.innerText = 'ON'; label.style.color = '#ef4444'; }
+        else { track.classList.remove('on'); label.innerText = 'OFF'; label.style.color = '#64748b'; }
     }
 
     async function toggleMaintenance() {
@@ -510,21 +460,19 @@
         if (newState && !confirm("Activer la maintenance ? Les votes seront bloqués côté serveur.")) return;
         setMaintenanceUI(newState);
         await fetch(`${BACKEND_URL}/api/maintenance`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ active: newState })
         });
     }
 
-    // ════════════════════════════════ COMPTEURS FINANCIERS
-    function calculerIndicateursFinanciers(votesData, candidatesData) {
-        const totalVotesValides = candidatesData.reduce((s, c) => s + (parseInt(c.votes) || 0), 0);
+    // ══ COMPTEURS
+    function calculerIndicateursFinanciers(vd, cd) {
+        const totalVotesValides = cd.reduce((s, c) => s + (parseInt(c.votes) || 0), 0);
         const totalValide       = totalVotesValides * 100;
-        const enAttente         = votesData.filter(v => v.status === 'pending');
+        const enAttente         = vd.filter(v => v.status === 'pending');
         const totalAttente      = enAttente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
-        const rejetes           = votesData.filter(v => v.status === 'rejected');
+        const rejetes           = vd.filter(v => v.status === 'rejected');
         const totalGeneral      = (totalValide + totalAttente) || 1;
-
         document.getElementById('fondsValides').innerText  = `${totalValide.toLocaleString('fr-FR')} F CFA`;
         document.getElementById('countValides').innerText  = `${totalVotesValides} vote(s) validé(s)`;
         document.getElementById('barValides').style.width  = Math.round(totalValide / totalGeneral * 100) + '%';
@@ -534,7 +482,6 @@
         document.getElementById('totalRejetes').innerText  = rejetes.length;
     }
 
-    // ════════════════════════════════ PANIER MOYEN
     function calculatePanierMoyen() {
         const valides    = votesData.filter(v => v.status === 'validated');
         const totalVotes = valides.reduce((s, v) => s + (parseInt(v.voteCount) || 0), 0);
@@ -542,13 +489,10 @@
         document.getElementById('finAverageCash').innerText = `${avg.toLocaleString('fr-FR')} F CFA`;
     }
 
-    // ════════════════════════════════ CRUD CANDIDATES
+    // ══ CRUD CANDIDATES
     function renderCandidatesCrud() {
         const container = document.getElementById('candidatesCrudList');
-        if (!candidatesList.length) {
-            container.innerHTML = `<p class="text-slate-600 text-xs italic text-center py-6">Aucune candidate.</p>`;
-            return;
-        }
+        if (!candidatesList.length) { container.innerHTML = `<p class="text-slate-600 text-xs italic text-center py-6">Aucune candidate.</p>`; return; }
         container.innerHTML = candidatesList.map(c => `
             <div class="flex items-center justify-between p-3 bg-slate-950/50 hover:bg-slate-950 rounded-xl transition-colors">
                 <div>
@@ -560,15 +504,14 @@
                     <button onclick="editCandidate('${c.id}','${escape(c.name)}','${escape(c.dept)}',${c.votes})" class="bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Modifier</button>
                     <button onclick="deleteCandidate('${c.id}')" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 px-2 py-1 rounded-lg text-[9px] uppercase font-black transition-all">Suppr</button>
                 </div>
-            </div>
-        `).join('');
+            </div>`).join('');
     }
 
     function editCandidate(id, name, dept, votes) {
         document.getElementById('formTitle').innerHTML = `<span class="w-1 h-4 bg-blue-500 rounded-full inline-block mr-2"></span>Modifier la Candidate`;
-        document.getElementById('candId').value    = id;
-        document.getElementById('candName').value  = unescape(name);
-        document.getElementById('candDept').value  = unescape(dept);
+        document.getElementById('candId').value = id;
+        document.getElementById('candName').value = unescape(name);
+        document.getElementById('candDept').value = unescape(dept);
         document.getElementById('candVotes').value = votes;
     }
 
@@ -581,9 +524,9 @@
     document.getElementById('candidateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData();
-        fd.append('id',    document.getElementById('candId').value);
-        fd.append('name',  document.getElementById('candName').value.trim());
-        fd.append('dept',  document.getElementById('candDept').value.trim());
+        fd.append('id', document.getElementById('candId').value);
+        fd.append('name', document.getElementById('candName').value.trim());
+        fd.append('dept', document.getElementById('candDept').value.trim());
         fd.append('votes', document.getElementById('candVotes').value);
         const file = document.getElementById('candPhoto').files[0];
         if (file) fd.append('photo', file);
@@ -598,18 +541,13 @@
         }
     }
 
-    // ════════════════════════════════ LOGS
     function renderLogs(logs) {
         const container = document.getElementById('logsContainer');
         if (!logs.length) return;
-        container.innerHTML = logs.map(l => `
-            <div class="py-1 border-b border-slate-800/40">
-                <span class="text-amber-500">[${l.time}]</span> ${l.text}
-            </div>
-        `).join('');
+        container.innerHTML = logs.map(l => `<div class="py-1 border-b border-slate-800/40"><span class="text-amber-500">[${l.time}]</span> ${l.text}</div>`).join('');
     }
 
-    // ════════════════════════════════ GRAPHIQUE
+    // ══ GRAPHIQUE VOTES PAR CANDIDATE
     function buildChart() {
         const ctx = document.getElementById('votesChart').getContext('2d');
         if (chartInstance) chartInstance.destroy();
@@ -630,7 +568,50 @@
         });
     }
 
-    // ════════════════════════════════ TABLEAU VALIDATION
+    // ✅ GRAPHIQUE ÉVOLUTION PAR HEURE
+    function buildHourlyChart() {
+        const ctx = document.getElementById('hourlyChart').getContext('2d');
+
+        // Grouper les votes par heure
+        const heureMap = {};
+        votesData.forEach(v => {
+            if (!v.submittedAt) return;
+            const heure = new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '00' });
+            heureMap[heure] = (heureMap[heure] || 0) + (parseInt(v.voteCount) || 1);
+        });
+
+        const labels = Object.keys(heureMap).sort();
+        const data   = labels.map(h => heureMap[h]);
+
+        if (hourlyChartInst) hourlyChartInst.destroy();
+        hourlyChartInst = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Votes soumis',
+                    data,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#f59e0b',
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', titleColor: '#f59e0b', bodyColor: '#94a3b8', borderColor: '#1e293b', borderWidth: 1 } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } } },
+                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 9 } }, beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // ══ TABLEAU VALIDATION
     function renderVotesTable() {
         const tbody   = document.getElementById('votesTableBody');
         const pending = votesData.filter(v => v.status === 'pending');
@@ -640,29 +621,19 @@
             return;
         }
         tbody.innerHTML = pending.map(v => {
-            const heure = v.submittedAt
-                ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                : '—';
+            const heure = v.submittedAt ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—';
             return `
             <tr class="vote-row">
                 <td class="px-5 py-4 font-black uppercase text-slate-200 text-xs">${v.candidate}</td>
                 <td class="px-5 py-4 font-black text-amber-400 mono">${v.voteCount}</td>
-                <td class="px-5 py-4 text-slate-300">
-                    <span class="font-bold text-xs">${v.senderName}</span><br>
-                    <span class="text-[10px] text-slate-500 mono">${v.senderPhone}</span>
-                </td>
+                <td class="px-5 py-4 text-slate-300"><span class="font-bold text-xs">${v.senderName}</span><br><span class="text-[10px] text-slate-500 mono">${v.senderPhone}</span></td>
                 <td class="px-5 py-4 mono font-black text-blue-400 text-xs">${v.txRef}</td>
-                <td class="px-5 py-4">
-                    <input type="text" id="control-${v.id}" placeholder="ID réel"
-                        class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors">
-                </td>
+                <td class="px-5 py-4"><input type="text" id="control-${v.id}" placeholder="ID réel" class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors"></td>
                 <td class="px-5 py-4 mono text-slate-500 text-[10px]">${heure}</td>
-                <td class="px-5 py-4">
-                    <a href="${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2">Voir ↗</a>
-                </td>
+                <td class="px-5 py-4"><a href="${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2">Voir ↗</a></td>
                 <td class="px-5 py-4 text-right space-x-2 whitespace-nowrap">
                     <button onclick="processVote('${v.id}','validate')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3 py-1.5 rounded-xl text-[10px] uppercase transition-all active:scale-95">✓ Valider</button>
-                    <button onclick="processVote('${v.id}','reject')"   class="bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold transition-all active:scale-95">✗ Rejeter</button>
+                    <button onclick="processVote('${v.id}','reject')" class="bg-red-600/15 hover:bg-red-600/30 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl text-[10px] uppercase font-bold transition-all active:scale-95">✗ Rejeter</button>
                 </td>
             </tr>`;
         }).join('');
@@ -673,34 +644,22 @@
         const ref  = ctrl ? ctrl.value.toUpperCase().trim() : "";
         if (action === 'validate' && !ref) { alert("⚠️ Code de contrôle obligatoire !"); return; }
         await fetch(`${BACKEND_URL}/api/admin-action`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, action, controlRef: ref, role: currentRole })
         });
         loadDashboard();
     }
 
-    // ════════════════════════════════ GRAPHIQUES TG
+    // ══ GRAPHIQUES TG
     function buildTgCharts() {
         const PALETTE = ['#d4a843','#e3b341','#f0c060','#a07828','#c49030','#b88020','#f5d080','#8a6020','#e8c050','#bc9838','#d0a040'];
         const ctxC = document.getElementById('tgChartCandidates').getContext('2d');
         if (tgChartCand) tgChartCand.destroy();
         tgChartCand = new Chart(ctxC, {
             type: 'bar',
-            data: {
-                labels: candidatesList.map(c => c.name.split(' ').slice(-1)[0]),
-                datasets: [{ data: candidatesList.map(c => c.votes || 0), backgroundColor: PALETTE, borderRadius: 5 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', titleColor: '#d4a843', bodyColor: '#94a3b8', borderColor: '#1e293b', borderWidth: 1 } },
-                scales: {
-                    x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } },
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } }
-                }
-            }
+            data: { labels: candidatesList.map(c => c.name.split(' ').slice(-1)[0]), datasets: [{ data: candidatesList.map(c => c.votes || 0), backgroundColor: PALETTE, borderRadius: 5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f172a', titleColor: '#d4a843', bodyColor: '#94a3b8', borderColor: '#1e293b', borderWidth: 1 } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } }, y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 8 } } } } }
         });
-
         const ctxS = document.getElementById('tgChartStatuts').getContext('2d');
         const nVal = votesData.filter(v => v.status === 'validated').length;
         const nPen = votesData.filter(v => v.status === 'pending').length;
@@ -708,26 +667,15 @@
         if (tgChartStat) tgChartStat.destroy();
         tgChartStat = new Chart(ctxS, {
             type: 'doughnut',
-            data: {
-                labels: ['Validés', 'En attente', 'Rejetés'],
-                datasets: [{ data: [nVal, nPen, nRej], backgroundColor: ['rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.7)'], borderColor: '#080c14', borderWidth: 3, hoverOffset: 6 }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '65%',
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 }, padding: 10, boxWidth: 8 } },
-                    tooltip: { backgroundColor: '#0f172a', titleColor: '#e6edf3', bodyColor: '#8b949e', borderColor: '#1e293b', borderWidth: 1 }
-                }
-            }
+            data: { labels: ['Validés', 'En attente', 'Rejetés'], datasets: [{ data: [nVal, nPen, nRej], backgroundColor: ['rgba(16,185,129,.8)','rgba(245,158,11,.8)','rgba(239,68,68,.7)'], borderColor: '#080c14', borderWidth: 3, hoverOffset: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 }, padding: 10, boxWidth: 8 } }, tooltip: { backgroundColor: '#0f172a', titleColor: '#e6edf3', bodyColor: '#8b949e', borderColor: '#1e293b', borderWidth: 1 } } }
         });
     }
 
-    // ════════════════════════════════ GRAND LIVRE TG
+    // ══ GRAND LIVRE TG
     function setTgFilter(f, btn) {
         tgFilter = f;
-        document.querySelectorAll('.tg-filter-btn').forEach(b => {
-            b.className = 'tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition-all';
-        });
+        document.querySelectorAll('.tg-filter-btn').forEach(b => { b.className = 'tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border border-slate-700 text-slate-400 hover:border-amber-500 hover:text-amber-400 transition-all'; });
         btn.className = 'tg-filter-btn text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-full border bg-amber-500 border-amber-500 text-slate-950 transition-all';
         renderTgLedger();
     }
@@ -737,14 +685,9 @@
         document.getElementById('tgCount').innerText = `${data.length} entrée(s)`;
         const statusLabel = { validated: 'Validé', pending: 'En attente', rejected: 'Rejeté' };
         const tbody = document.getElementById('tgLedgerBody');
-        if (!data.length) {
-            tbody.innerHTML = `<tr><td colspan="9" class="p-10 text-center text-slate-600 italic text-xs">Aucune transaction trouvée.</td></tr>`;
-            return;
-        }
+        if (!data.length) { tbody.innerHTML = `<tr><td colspan="9" class="p-10 text-center text-slate-600 italic text-xs">Aucune transaction trouvée.</td></tr>`; return; }
         tbody.innerHTML = data.map((v, i) => {
-            const heure = v.submittedAt
-                ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-                : '—';
+            const heure = v.submittedAt ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—';
             return `
             <tr class="vote-row">
                 <td class="px-5 py-4 mono text-slate-600 text-[10px]">${i + 1}</td>
@@ -760,7 +703,174 @@
         }).join('');
     }
 
-    // ════════════════════════════════ RESET
+    // ✅ EXPORT CSV
+    function exportCSV() {
+        const headers = ['#', 'Heure', 'Expéditeur', 'Téléphone', 'Candidate', 'Montant (F CFA)', 'Votes', 'ID Transaction', 'Statut'];
+        const rows = votesData.map((v, i) => {
+            const heure = v.submittedAt ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—';
+            return [
+                i + 1,
+                heure,
+                `"${v.senderName || ''}"`,
+                v.senderPhone || '',
+                `"${v.candidate || ''}"`,
+                (parseInt(v.voteCount) || 0) * 100,
+                v.voteCount || 0,
+                v.txRef || '',
+                v.status || ''
+            ].join(',');
+        });
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `miss-fllac-transactions-${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ✅ EXPORT PDF
+    function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        const now  = new Date().toLocaleString('fr-FR');
+        const totalVotes = candidatesList.reduce((s, c) => s + (parseInt(c.votes) || 0), 0);
+        const totalFonds = totalVotes * 100;
+        const enAttente  = votesData.filter(v => v.status === 'pending');
+        const rejetes    = votesData.filter(v => v.status === 'rejected');
+
+        // En-tête
+        doc.setFillColor(8, 12, 20);
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(212, 175, 55);
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RAPPORT FINANCIER — MISS FLLAC 2026', 105, 18, { align: 'center' });
+        doc.setFontSize(8);
+        doc.setTextColor(180, 180, 180);
+        doc.text(`Généré le ${now}`, 105, 27, { align: 'center' });
+        doc.text('Trésorerie — Document Confidentiel', 105, 33, { align: 'center' });
+
+        // Résumé financier
+        doc.setFillColor(17, 24, 39);
+        doc.roundedRect(10, 45, 190, 45, 3, 3, 'F');
+        doc.setTextColor(212, 175, 55);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('RÉSUMÉ FINANCIER', 15, 55);
+
+        doc.setTextColor(16, 185, 129);
+        doc.setFontSize(9);
+        doc.text(`Fonds Validés (En Caisse) :`, 15, 65);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${totalFonds.toLocaleString('fr-FR')} F CFA`, 80, 65);
+
+        doc.setTextColor(245, 158, 11);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fonds En Attente :`, 15, 72);
+        doc.setFont('helvetica', 'bold');
+        const totalAttenteF = enAttente.reduce((s, v) => s + ((parseInt(v.voteCount) || 0) * 100), 0);
+        doc.text(`${totalAttenteF.toLocaleString('fr-FR')} F CFA`, 80, 72);
+
+        doc.setTextColor(239, 68, 68);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fraudes Rejetées :`, 15, 79);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${rejetes.length} requête(s)`, 80, 79);
+
+        doc.setTextColor(100, 116, 139);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Total Votes Validés :`, 15, 86);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${totalVotes} votes`, 80, 86);
+
+        // Classement
+        doc.setTextColor(212, 175, 55);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CLASSEMENT DES CANDIDATES', 15, 100);
+
+        let y = 108;
+        candidatesList.forEach((c, i) => {
+            doc.setFillColor(i % 2 === 0 ? 22 : 17, i % 2 === 0 ? 28 : 24, i % 2 === 0 ? 45 : 39);
+            doc.rect(10, y - 4, 190, 7, 'F');
+            doc.setTextColor(i === 0 ? 212 : 200, i === 0 ? 175 : 200, i === 0 ? 55 : 200);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', i === 0 ? 'bold' : 'normal');
+            doc.text(`${i + 1}.`, 15, y);
+            doc.text(c.name, 25, y);
+            doc.text(c.dept, 110, y);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${c.votes || 0} pts`, 165, y);
+            doc.text(`${((c.votes || 0) * 100).toLocaleString('fr-FR')} F`, 178, y);
+            y += 8;
+            if (y > 270) { doc.addPage(); y = 20; }
+        });
+
+        // Transactions
+        y += 5;
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.setTextColor(212, 175, 55);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('HISTORIQUE DES TRANSACTIONS', 15, y);
+        y += 8;
+
+        votesData.slice(0, 30).forEach((v, i) => {
+            if (y > 270) { doc.addPage(); y = 20; }
+            const heure = v.submittedAt ? new Date(v.submittedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—';
+            doc.setFillColor(i % 2 === 0 ? 22 : 17, i % 2 === 0 ? 28 : 24, i % 2 === 0 ? 45 : 39);
+            doc.rect(10, y - 4, 190, 7, 'F');
+            const statusColor = v.status === 'validated' ? [16,185,129] : v.status === 'pending' ? [245,158,11] : [239,68,68];
+            doc.setTextColor(...statusColor);
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.text(heure, 12, y);
+            doc.setTextColor(200, 200, 200);
+            doc.text((v.senderName || '—').substring(0, 18), 28, y);
+            doc.text((v.candidate || '—').substring(0, 20), 82, y);
+            doc.text(`${((parseInt(v.voteCount)||0)*100).toLocaleString('fr-FR')} F`, 148, y);
+            doc.setTextColor(...statusColor);
+            doc.text(v.status === 'validated' ? 'VALIDE' : v.status === 'pending' ? 'ATTENTE' : 'REJETE', 178, y);
+            y += 7;
+        });
+
+        if (votesData.length > 30) {
+            doc.setTextColor(100, 116, 139);
+            doc.setFontSize(7);
+            doc.text(`... et ${votesData.length - 30} autre(s) transaction(s) non affichée(s)`, 15, y + 3);
+        }
+
+        // Signature
+        doc.addPage();
+        doc.setFillColor(8, 12, 20);
+        doc.rect(0, 0, 210, 297, 'F');
+        doc.setTextColor(212, 175, 55);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('CERTIFICATION DE LA TRÉSORIÈRE', 105, 50, { align: 'center' });
+        doc.setTextColor(180, 180, 180);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Je soussignée, Trésorière Générale de Miss FLLAC 2026,`, 105, 65, { align: 'center' });
+        doc.text(`certifie que les informations financières contenues dans ce rapport`, 105, 73, { align: 'center' });
+        doc.text(`sont conformes aux données enregistrées dans le système de vote.`, 105, 81, { align: 'center' });
+        doc.setTextColor(212, 175, 55);
+        doc.text(`Montant Total Certifié : ${totalFonds.toLocaleString('fr-FR')} F CFA`, 105, 95, { align: 'center' });
+        doc.setTextColor(100, 116, 139);
+        doc.text(`Date : ${now}`, 105, 108, { align: 'center' });
+        doc.setDrawColor(212, 175, 55);
+        doc.line(55, 150, 155, 150);
+        doc.setTextColor(180, 180, 180);
+        doc.text('Signature & Cachet de la TG', 105, 158, { align: 'center' });
+
+        doc.save(`rapport-financier-miss-fllac-${new Date().toLocaleDateString('fr-FR').replace(/\//g,'-')}.pdf`);
+    }
+
+    // ══ RESET
     async function resetPlatform() {
         if (confirm("Tout réinitialiser ? Action irréversible.") && prompt("Confirmez avec le mot de passe :") === "VOTEGESTION") {
             await fetch(`${BACKEND_URL}/api/admin-reset`, { method: 'POST' });
