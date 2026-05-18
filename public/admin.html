@@ -326,7 +326,6 @@
                                 <th class="px-5 py-4">Votes</th>
                                 <th class="px-5 py-4">Payeur</th>
                                 <th class="px-5 py-4">ID Déclaré</th>
-                                <th class="px-5 py-4 text-blue-400">ID Contrôle</th>
                                 <th class="px-5 py-4">Heure</th>
                                 <th class="px-5 py-4">Preuve</th>
                                 <th class="px-5 py-4 text-right">Actions</th>
@@ -729,7 +728,6 @@
                 <td class="px-5 py-4 font-black text-amber-400 mono">${v.voteCount}</td>
                 <td class="px-5 py-4 text-slate-300"><span class="font-bold text-xs">${v.senderName}</span><br><span class="text-[10px] text-slate-500 mono">${v.senderPhone}</span></td>
                 <td class="px-5 py-4 mono font-black text-blue-400 text-xs">${v.txRef}</td>
-                <td class="px-5 py-4"><input type="text" id="control-${v.id}" placeholder="ID réel" class="p-2 bg-slate-950 border border-slate-700 focus:border-blue-500 rounded-xl text-[11px] mono font-black text-white outline-none uppercase w-36 transition-colors"></td>
                 <td class="px-5 py-4 mono text-slate-500 text-[10px]">${heure}</td>
                 <td class="px-5 py-4"><a href="${v.captureUrl}" target="_blank" class="text-amber-400 hover:text-amber-300 font-bold text-[10px] underline underline-offset-2">Voir ↗</a></td>
                 <td class="px-5 py-4 text-right space-x-2 whitespace-nowrap">
