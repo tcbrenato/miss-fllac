@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#D4AF37">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VOTE MISS FLLAC 2026</title>
@@ -16,6 +18,11 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
     </style>
 </head>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 <body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900">
 
     <header class="jef-green text-white p-4 sticky top-0 z-50 shadow-lg bg-opacity-95">
