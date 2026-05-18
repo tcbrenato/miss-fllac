@@ -3,8 +3,11 @@
 <head>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#D4AF37">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PANEL DE CONTRÔLE MISS FLLAC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -739,9 +742,7 @@
     }
 
     async function processVote(id, action) {
-        const ctrl = document.getElementById(`control-${id}`);
-        const ref  = ctrl ? ctrl.value.toUpperCase().trim() : "";
-        if (action === 'validate' && !ref) { alert("⚠️ Code de contrôle obligatoire !"); return; }
+        const ref = "";
         await fetch(`${BACKEND_URL}/api/admin-action`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, action, controlRef: ref, role: currentRole })
