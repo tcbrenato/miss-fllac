@@ -517,7 +517,7 @@
     // ✅ RECETTE DU JOUR
     function calculerRecetteJour(vd) {
         const now   = new Date();
-        const debut = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 30, 0);
+        const debut = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 8, 30, 0));
         const fin   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
 
         // Afficher la date
