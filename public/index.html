@@ -1,130 +1,256 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#D4AF37">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISS FLLAC 2026 — Mise à jour en cours</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOTE MISS FLLAC 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .jef-green { background-color: #06402B; }
         .text-jef-gold { color: #D4AF37; }
+        .bg-jef-gold { background-color: #D4AF37; }
+        .border-jef-gold { border-color: #D4AF37; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 30s linear infinite; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
-        @keyframes pulse-ring { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.05)} }
-        .pulse-ring { animation: pulse-ring 2s infinite; }
-        @keyframes spin-slow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .spin-slow { animation: spin-slow 8s linear infinite; }
     </style>
 </head>
-<body class="bg-[#080c14] text-white min-h-screen flex flex-col">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+<body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900">
 
-    <!-- HEADER -->
-    <header class="jef-green p-4 shadow-lg">
-        <div class="max-w-2xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black text-jef-gold tracking-tighter italic uppercase">MISS FLLAC 2026</h1>
+    <header class="jef-green text-white p-4 sticky top-0 z-50 shadow-lg bg-opacity-95">
+        <div class="flex justify-between items-center max-w-6xl mx-auto">
+            <h1 class="text-2xl font-black text-jef-gold tracking-tighter italic uppercase">MISS FLLAC 2026</h1>
             <div class="flex items-center gap-2 bg-emerald-950/60 px-3 py-1.5 rounded-full border border-white/10">
-                <span class="w-2 h-2 bg-amber-400 rounded-full pulse-ring"></span>
-                <span class="text-[10px] font-black uppercase tracking-widest text-amber-400">Mise à jour</span>
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400">Classement Live</span>
             </div>
         </div>
     </header>
 
-    <!-- MESSAGE MAINTENANCE -->
-    <div class="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center">
-        <div class="max-w-lg w-full space-y-6">
-
-            <!-- Icône -->
-            <div class="relative inline-block">
-                <div class="w-24 h-24 rounded-full bg-amber-500/10 border-2 border-amber-500/30 flex items-center justify-center mx-auto spin-slow">
-                    <span class="text-5xl">⚙️</span>
-                </div>
-            </div>
-
-            <!-- Titre -->
-            <div class="space-y-2">
-                <h2 class="text-3xl font-black text-jef-gold uppercase tracking-tight">Mise à jour en cours</h2>
-                <p class="text-slate-400 text-sm leading-relaxed">
-                    La plateforme de vote est temporairement suspendue pour une mise à jour technique.
-                    <br>Les votes reprennent très bientôt !
-                </p>
-            </div>
-
-            <!-- Badge -->
-            <div class="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-5 py-3 rounded-full">
-                <span class="w-2 h-2 bg-amber-400 rounded-full pulse-ring"></span>
-                <span class="text-amber-400 font-black text-sm uppercase tracking-wider">Réouverture à 9H30 ⏰</span>
-            </div>
-
-            <!-- Info -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-left space-y-2">
-                <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">ℹ️ Information</p>
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    Vos votes déjà soumis sont bien enregistrés et seront traités dès la réouverture. Merci de votre patience et de votre confiance ! 👑
-                </p>
-            </div>
+    <div class="bg-amber-400 border-b border-amber-500 py-2 overflow-hidden shadow-sm">
+        <div class="animate-marquee font-bold text-xs uppercase tracking-wide text-amber-950">
+            ⚡ GUIDE DE VOTE : 1️⃣ Recherchez et choisissez la candidate — 2️⃣ Payez via USSD — 3️⃣ Remplissez les infos de paiement — 4️⃣ Soumettez ! ⚡
         </div>
     </div>
 
-    <!-- CLASSEMENT LIVE -->
-    <div class="max-w-2xl mx-auto w-full px-4 pb-10">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                <h3 class="text-base font-black text-jef-gold italic uppercase flex items-center gap-2">
-                    🏆 Classement Actuel
-                </h3>
-                <div class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full pulse-ring"></span>
-                    <span class="text-[10px] text-slate-500 font-bold uppercase">Live</span>
+    <main class="max-w-md mx-auto p-4 space-y-6 lg:max-w-7xl lg:grid lg:grid-cols-12 lg:gap-8 lg:space-y-0 lg:py-8">
+        
+        <section class="lg:col-span-4 lg:order-3">
+            <div class="bg-slate-950 rounded-3xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col h-[600px]">
+                <div class="p-6 border-b border-slate-800">
+                    <h2 class="text-lg font-black text-jef-gold flex items-center gap-2 italic uppercase">🏆 Classement Actuel</h2>
+                </div>
+                <div id="rankingList" class="p-4 space-y-3 flex-1 overflow-y-auto custom-scrollbar"></div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-4 lg:order-1">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 sticky top-28 group">
+                <div class="aspect-[4/5] bg-slate-100 relative overflow-hidden">
+                    <img id="candidateImg" loading="lazy" src="https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS" class="w-full h-full object-cover transition-all duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                        <span class="inline-block bg-jef-gold text-emerald-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase mb-2">CANDIDATE OFFICIELLE</span>
+                        <h3 id="previewName" class="text-2xl font-black italic uppercase">VOTRE CHOIX</h3>
+                        <p id="previewDept" class="text-xs text-jef-gold font-bold uppercase tracking-widest mt-1">Département</p>
+                    </div>
                 </div>
             </div>
-            <div id="rankingList" class="p-4 space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-                <p class="text-slate-600 text-center text-xs py-4 italic">Chargement du classement...</p>
+        </section>
+
+        <section class="lg:col-span-4 lg:order-2">
+            <div class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100 space-y-6">
+                <form id="voteForm" class="space-y-5">
+                    
+                    <div class="space-y-2">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">1. Choisir la candidate</label>
+                        <div class="relative">
+                            <input type="text" id="searchCandidate" placeholder="🔍 Rechercher par nom ou département..." class="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all">
+                        </div>
+                        <select id="candidateSelect" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm text-slate-700 outline-none" required>
+                            <option value="" data-name="-" data-dept="-">-- SÉLECTIONNER --</option>
+                            <option value="1" data-dept="Anglais" data-name="LAWSON Thalia">01 - LAWSON Thalia (Anglais)</option>
+                            <option value="2" data-dept="DSLC" data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella (DSLC)</option>
+                            <option value="3" data-dept="Anglais" data-name="GBOYOU Oriane">03 - GBOYOU Oriane (Anglais)</option>
+                            <option value="4" data-dept="Anglais" data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos (Anglais)</option>
+                            <option value="5" data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine (Lettres Mod.)</option>
+                            <option value="6" data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte (Lettres Mod.)</option>
+                            <option value="7" data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine (Lettres Mod.)</option>
+                            <option value="8" data-dept="Anglais" data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine (Anglais)</option>
+                            <option value="9" data-dept="Espagnol" data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH (Espagnol)</option>
+                            <option value="10" data-dept="Lettres Mod." data-name="SOTON Odette">10 - SOTON Odette (Lettres Mod.)</option>
+                            <option value="11" data-dept="Lettres Mod." data-name="AGBEGNINOU Marie Josée">11 - AGBEGNINOU Marie Josée (Lettres Mod.)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">2. Nombre de votes</label>
+                        <div class="flex gap-4 items-center bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                            <div class="flex-1">
+                                <input type="number" id="voteCount" min="1" value="1" class="w-full bg-transparent text-xl font-black outline-none">
+                            </div>
+                            <div class="text-right bg-emerald-50 px-3 py-1 rounded-xl">
+                                <span class="text-xl font-black text-emerald-900"><span id="totalPrice">100</span> F</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">3. Code USSD (Cliquez pour copier)</label>
+                        <div class="bg-blue-600 p-3 rounded-2xl text-white text-center cursor-pointer" onclick="copyUSSD()">
+                            <p id="ussdCode" class="font-mono font-black text-sm tracking-wider">*880*46*0191225602*100#</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <label class="text-[11px] font-bold text-slate-600 uppercase block border-b pb-1">4. Informations de paiement</label>
+                        <div>
+                            <input type="text" id="senderName" placeholder="Nom complet du payeur" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        </div>
+                        <div>
+                            <input type="tel" id="senderPhone" placeholder="Numéro de téléphone utilisé" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        </div>
+                        <div>
+                            <input type="text" id="txRef" placeholder="ID / Référence de la transaction" class="w-full p-3 bg-white border border-blue-300 focus:border-blue-500 rounded-xl text-xs font-black uppercase outline-none" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">5. Joindre la capture d'écran</label>
+                        <div class="border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl p-3 text-center relative">
+                            <input type="file" id="capture" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" required>
+                            <span class="text-xs font-bold text-slate-600" id="fileStatus">Sélectionner l'image</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full jef-green text-jef-gold font-black py-4 rounded-2xl uppercase text-xs tracking-widest active:scale-95 transition-all">
+                        🚀 Envoyer mon vote
+                    </button>
+                </form>
             </div>
-            <div class="px-5 py-3 border-t border-slate-800 text-center">
-                <p class="text-[10px] text-slate-600 font-bold uppercase">Classement mis à jour toutes les 15 secondes</p>
-            </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
+        const select = document.getElementById('candidateSelect');
+        const img = document.getElementById('candidateImg');
+        const nameDisp = document.getElementById('previewName');
+        const deptDisp = document.getElementById('previewDept');
+        const voteInp = document.getElementById('voteCount');
+        const priceDisp = document.getElementById('totalPrice');
+        const ussdDisp = document.getElementById('ussdCode');
+        const captureInput = document.getElementById('capture');
+        const fileStatus = document.getElementById('fileStatus');
+        const searchInput = document.getElementById('searchCandidate');
+        const allOptions = Array.from(select.options);
+
+        // Barre de recherche fluide
+        searchInput.addEventListener('input', (e) => {
+            const filterText = e.target.value.toLowerCase().trim();
+            select.innerHTML = '';
+            const filteredOptions = allOptions.filter(option => {
+                if (option.value === "") return true;
+                const name = option.getAttribute('data-name').toLowerCase();
+                const dept = option.getAttribute('data-dept').toLowerCase();
+                return name.includes(filterText) || dept.includes(filterText);
+            });
+            filteredOptions.forEach(option => select.appendChild(option));
+            select.selectedIndex = filterText !== '' && filteredOptions.length > 1 ? 1 : 0;
+            select.dispatchEvent(new Event('change'));
+        });
+
+        select.addEventListener('change', () => {
+            const opt = select.options[select.selectedIndex];
+            if(select.value) {
+                img.src = `/candidates/candidate${select.value}.jpg`; 
+                nameDisp.innerText = opt.getAttribute('data-name');
+                deptDisp.innerText = opt.getAttribute('data-dept');
+            } else {
+                img.src = "https://via.placeholder.com/400x500?text=CHOISISSEZ+VOTRE+MISS";
+                nameDisp.innerText = "VOTRE CHOIX";
+                deptDisp.innerText = "Département";
+            }
+        });
+
+        captureInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) fileStatus.innerText = "✅ Image chargée";
+        });
+
+        voteInp.addEventListener('input', () => {
+            const amount = Math.max(1, voteInp.value) * 100;
+            priceDisp.innerText = amount;
+            ussdDisp.innerText = `*880*46*0191225602*${amount}#`;
+        });
+
+        function copyUSSD() {
+            navigator.clipboard.writeText(ussdDisp.innerText);
+            alert("Code USSD copié !");
+        }
+
         async function updateRanking() {
             try {
-                const res  = await fetch('https://miss-fllac-backend.onrender.com/api/ranking');
+                const res = await fetch('https://miss-fllac-backend.onrender.com/api/ranking');
                 const data = await res.json();
                 const container = document.getElementById('rankingList');
                 container.innerHTML = '';
                 const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
 
                 if (sorted.length === 0) {
-                    container.innerHTML = '<p class="text-slate-500 text-center text-xs py-4">Aucun vote validé</p>';
+                    container.innerHTML = '<p class="text-slate-500 text-center text-xs py-8">Aucun vote validé</p>';
                     return;
                 }
 
-                const medals = ['🥇', '🥈', '🥉'];
                 sorted.forEach(([name, count], index) => {
                     const item = document.createElement('div');
-                    item.className = `flex items-center justify-between p-3 rounded-xl border transition-all ${
-                        index === 0 ? 'bg-amber-500/10 border-amber-500/30' :
-                        index === 1 ? 'bg-slate-800/50 border-slate-700' :
-                        index === 2 ? 'bg-slate-800/30 border-slate-800' :
-                        'bg-slate-900 border-slate-800/50'
-                    }`;
+                    item.className = `flex items-center justify-between p-3 rounded-xl bg-slate-900 border ${index === 0 ? 'border-amber-500' : 'border-slate-800'}`;
                     item.innerHTML = `
-                        <div class="flex items-center gap-3 truncate">
-                            <span class="text-sm font-black ${index < 3 ? '' : 'text-slate-600'} w-6 text-center">
-                                ${index < 3 ? medals[index] : (index + 1)}
-                            </span>
-                            <span class="text-xs font-black uppercase truncate ${index === 0 ? 'text-jef-gold' : 'text-slate-200'}">${name}</span>
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="text-xs ${index === 0 ? 'text-jef-gold' : 'text-slate-500'}">${index + 1}</span>
+                            <span class="text-xs text-slate-100 font-bold uppercase truncate">${name}</span>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="text-xs font-black text-jef-gold">${count} pts</span>
-                            <span class="text-[9px] text-slate-600 mono">${(count * 100).toLocaleString('fr-FR')} F</span>
-                        </div>
+                        <span class="text-xs font-black text-jef-gold">${count} pts</span>
                     `;
                     container.appendChild(item);
                 });
             } catch (e) {}
         }
+
+        document.getElementById('voteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "ENVOI EN COURS...";
+
+            const formData = new FormData();
+            formData.append('candidate', select.options[select.selectedIndex].getAttribute('data-name'));
+            formData.append('voteCount', voteInp.value);
+            formData.append('senderName', document.getElementById('senderName').value);
+            formData.append('senderPhone', document.getElementById('senderPhone').value);
+            formData.append('txRef', document.getElementById('txRef').value.toUpperCase().trim());
+            formData.append('capture', captureInput.files[0]);
+
+            try {
+                const response = await fetch('https://miss-fllac-backend.onrender.com/api/voter', { method: 'POST', body: formData });
+                if(response.ok) {
+                    alert("✅ Vote transmis ! En attente de validation par le gestionnaire.");
+                    location.reload();
+                } else {
+                    const errData = await response.json();
+                    alert("⚠️ " + (errData.error || "Erreur lors de l'envoi."));
+                    btn.disabled = false; btn.innerText = "🚀 Envoyer mon vote";
+                }
+            } catch (err) {
+                alert("Erreur réseau.");
+                btn.disabled = false;
+            }
+        });
 
         setInterval(updateRanking, 15000);
         updateRanking();
