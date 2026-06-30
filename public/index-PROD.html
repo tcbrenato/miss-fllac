@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#D4AF37">
+    <meta name="theme-color" content="#D4AF37">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VOTE MISS FLLAC 2026</title>
@@ -16,12 +16,26 @@
         .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 30s linear infinite; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 10px; }
+
+        /* Opérateur tabs */
+        .op-tab { transition: all 0.2s; cursor: pointer; }
+        .op-tab.active-mtn  { background: #f59e0b; color: #0f172a; border-color: #f59e0b; }
+        .op-tab.active-moov { background: #3b82f6; color: white;   border-color: #3b82f6; }
+        .op-tab.active-cel  { background: #10b981; color: white;   border-color: #10b981; }
+
+        /* Méthode tabs */
+        .method-tab { transition: all 0.2s; cursor: pointer; }
+        .method-tab.active { background: #06402B; color: #D4AF37; border-color: #06402B; }
+
+        /* Copier animation */
+        .copied { animation: flash 0.3s ease; }
+        @keyframes flash { 0%,100%{opacity:1} 50%{opacity:0.5} }
     </style>
 </head>
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
 </script>
 <body class="bg-slate-50 min-h-screen font-sans antialiased text-slate-900">
 
@@ -37,12 +51,13 @@
 
     <div class="bg-amber-400 border-b border-amber-500 py-2 overflow-hidden shadow-sm">
         <div class="animate-marquee font-bold text-xs uppercase tracking-wide text-amber-950">
-            ⚡ GUIDE DE VOTE : 1️⃣ Recherchez et choisissez la candidate — 2️⃣ Payez via USSD — 3️⃣ Remplissez les infos de paiement — 4️⃣ Soumettez ! ⚡
+            ⚡ GUIDE DE VOTE : 1️⃣ Choisissez la candidate — 2️⃣ Choisissez votre opérateur — 3️⃣ Payez via transfert ou USSD — 4️⃣ Remplissez les infos — 5️⃣ Soumettez ! ⚡
         </div>
     </div>
 
     <main class="max-w-md mx-auto p-4 space-y-6 lg:max-w-7xl lg:grid lg:grid-cols-12 lg:gap-8 lg:space-y-0 lg:py-8">
         
+        <!-- CLASSEMENT -->
         <section class="lg:col-span-4 lg:order-3">
             <div class="bg-slate-950 rounded-3xl shadow-2xl overflow-hidden border border-slate-800 flex flex-col h-[600px]">
                 <div class="p-6 border-b border-slate-800">
@@ -52,6 +67,7 @@
             </div>
         </section>
 
+        <!-- PHOTO CANDIDATE -->
         <section class="lg:col-span-4 lg:order-1">
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 sticky top-28 group">
                 <div class="aspect-[4/5] bg-slate-100 relative overflow-hidden">
@@ -66,31 +82,32 @@
             </div>
         </section>
 
+        <!-- FORMULAIRE -->
         <section class="lg:col-span-4 lg:order-2">
             <div class="bg-white rounded-3xl shadow-xl p-6 border border-slate-100 space-y-6">
                 <form id="voteForm" class="space-y-5">
                     
+                    <!-- ÉTAPE 1 : Candidate -->
                     <div class="space-y-2">
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">1. Choisir la candidate</label>
-                        <div class="relative">
-                            <input type="text" id="searchCandidate" placeholder="🔍 Rechercher par nom ou département..." class="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all">
-                        </div>
+                        <input type="text" id="searchCandidate" placeholder="🔍 Rechercher par nom ou département..." class="w-full p-3.5 bg-slate-100 border border-slate-200 rounded-2xl text-xs font-bold outline-none focus:border-emerald-600 focus:bg-white transition-all">
                         <select id="candidateSelect" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-black text-sm text-slate-700 outline-none" required>
                             <option value="" data-name="-" data-dept="-">-- SÉLECTIONNER --</option>
-                            <option value="1" data-dept="Anglais" data-name="LAWSON Thalia">01 - LAWSON Thalia (Anglais)</option>
-                            <option value="2" data-dept="DSLC" data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella (DSLC)</option>
-                            <option value="3" data-dept="Anglais" data-name="GBOYOU Oriane">03 - GBOYOU Oriane (Anglais)</option>
-                            <option value="4" data-dept="Anglais" data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos (Anglais)</option>
-                            <option value="5" data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine (Lettres Mod.)</option>
-                            <option value="6" data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte (Lettres Mod.)</option>
-                            <option value="7" data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine (Lettres Mod.)</option>
-                            <option value="8" data-dept="Anglais" data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine (Anglais)</option>
-                            <option value="9" data-dept="Espagnol" data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH (Espagnol)</option>
+                            <option value="1"  data-dept="Anglais"      data-name="LAWSON Thalia">01 - LAWSON Thalia (Anglais)</option>
+                            <option value="2"  data-dept="DSLC"         data-name="DOSSOU Gabriella">02 - DOSSOU Gabriella (DSLC)</option>
+                            <option value="3"  data-dept="Anglais"      data-name="GBOYOU Oriane">03 - GBOYOU Oriane (Anglais)</option>
+                            <option value="4"  data-dept="Anglais"      data-name="ALIASSIM Fridos">04 - ALIASSIM Fridos (Anglais)</option>
+                            <option value="5"  data-dept="Lettres Mod." data-name="AHOUANDJINOU Gislaine">05 - AHOUANDJINOU Gislaine (Lettres Mod.)</option>
+                            <option value="6"  data-dept="Lettres Mod." data-name="ADJAÏ Bénédicte">06 - ADJAÏ Bénédicte (Lettres Mod.)</option>
+                            <option value="7"  data-dept="Lettres Mod." data-name="FANDONOUGBO Sabine">07 - FANDONOUGBO Sabine (Lettres Mod.)</option>
+                            <option value="8"  data-dept="Anglais"      data-name="HOUNTONDJI Lislaine">08 - HOUNTONDJI Lislaine (Anglais)</option>
+                            <option value="9"  data-dept="Espagnol"     data-name="YACOUBOU NADIATH">09 - YACOUBOU NADIATH (Espagnol)</option>
                             <option value="10" data-dept="Lettres Mod." data-name="SOTON Odette">10 - SOTON Odette (Lettres Mod.)</option>
                             <option value="11" data-dept="Lettres Mod." data-name="AGBEGNINOU Marie Josée">11 - AGBEGNINOU Marie Josée (Lettres Mod.)</option>
                         </select>
                     </div>
 
+                    <!-- ÉTAPE 2 : Nombre de votes -->
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase">2. Nombre de votes</label>
                         <div class="flex gap-4 items-center bg-slate-50 p-3 rounded-2xl border border-slate-200">
@@ -103,26 +120,78 @@
                         </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-slate-500 uppercase">3. Code USSD (Cliquez pour copier)</label>
-                        <div class="bg-blue-600 p-3 rounded-2xl text-white text-center cursor-pointer" onclick="copyUSSD()">
-                            <p id="ussdCode" class="font-mono font-black text-sm tracking-wider">*880*46*0191225602*100#</p>
+                    <!-- ÉTAPE 3 : PAIEMENT -->
+                    <div class="space-y-3">
+                        <label class="text-[11px] font-bold text-slate-500 uppercase">3. Choisir l'opérateur & méthode de paiement</label>
+
+                        <!-- Sélection opérateur -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="setOperateur('mtn')" id="tab-mtn"
+                                class="op-tab active-mtn border-2 border-amber-400 rounded-xl py-2 px-1 text-center font-black text-xs">
+                                🟡 MTN
+                            </button>
+                            <button type="button" onclick="setOperateur('moov')" id="tab-moov"
+                                class="op-tab border-2 border-slate-200 rounded-xl py-2 px-1 text-center font-black text-xs text-slate-500">
+                                🔵 Moov
+                            </button>
+                            <button type="button" onclick="setOperateur('cel')" id="tab-cel"
+                                class="op-tab border-2 border-slate-200 rounded-xl py-2 px-1 text-center font-black text-xs text-slate-500">
+                                🟢 Celtiis
+                            </button>
+                        </div>
+
+                        <!-- Sélection méthode -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" onclick="setMethode('transfert')" id="method-transfert"
+                                class="method-tab active border-2 border-slate-800 bg-slate-800 text-jef-gold rounded-xl py-2 text-xs font-black">
+                                💸 Transfert direct
+                            </button>
+                            <button type="button" onclick="setMethode('ussd')" id="method-ussd"
+                                class="method-tab border-2 border-slate-200 rounded-xl py-2 text-xs font-black text-slate-500">
+                                📱 Code USSD
+                            </button>
+                        </div>
+
+                        <!-- BLOC TRANSFERT -->
+                        <div id="bloc-transfert" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase">Numéro à créditer</p>
+                            <div id="numero-display" class="bg-white border-2 border-dashed border-slate-300 rounded-xl p-3 text-center cursor-pointer" onclick="copierNumero()">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1" id="operateur-label">MTN Mobile Money</p>
+                                <p class="text-2xl font-black text-slate-800 tracking-widest mono" id="numero-affiche">0161 974 888</p>
+                                <p class="text-[10px] text-slate-400 mt-1">👆 Appuyez pour copier</p>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                                <p class="text-[10px] font-bold text-amber-700 uppercase mb-1">📋 Instructions</p>
+                                <p class="text-[11px] text-amber-800" id="instructions-transfert">
+                                    Envoyez <strong id="montant-transfert">100 F CFA</strong> au numéro ci-dessus via MTN Mobile Money, puis remplissez les informations de paiement ci-dessous.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- BLOC USSD -->
+                        <div id="bloc-ussd" class="hidden space-y-2">
+                            <div class="bg-blue-600 p-3 rounded-2xl text-white text-center cursor-pointer" onclick="copyUSSD()">
+                                <p class="text-[10px] font-bold uppercase mb-1 opacity-70">Code USSD — Appuyez pour copier</p>
+                                <p id="ussdCode" class="font-mono font-black text-sm tracking-wider">*880*46*0161974888*100#</p>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                                <p class="text-[10px] font-bold text-blue-700 uppercase mb-1">📋 Instructions</p>
+                                <p class="text-[11px] text-blue-800" id="instructions-ussd">
+                                    Composez le code USSD ci-dessus depuis votre téléphone MTN, confirmez le paiement, puis remplissez les informations ci-dessous.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- ÉTAPE 4 : Informations de paiement -->
                     <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                         <label class="text-[11px] font-bold text-slate-600 uppercase block border-b pb-1">4. Informations de paiement</label>
-                        <div>
-                            <input type="text" id="senderName" placeholder="Nom complet du payeur" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
-                        </div>
-                        <div>
-                            <input type="tel" id="senderPhone" placeholder="Numéro de téléphone utilisé" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
-                        </div>
-                        <div>
-                            <input type="text" id="txRef" placeholder="ID / Référence de la transaction" class="w-full p-3 bg-white border border-blue-300 focus:border-blue-500 rounded-xl text-xs font-black uppercase outline-none" required>
-                        </div>
+                        <input type="text" id="senderName" placeholder="Nom complet du payeur" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        <input type="tel" id="senderPhone" placeholder="Numéro de téléphone utilisé" class="w-full p-3 bg-white border rounded-xl text-xs font-bold outline-none" required>
+                        <input type="text" id="txRef" placeholder="ID / Référence de la transaction" class="w-full p-3 bg-white border border-blue-300 focus:border-blue-500 rounded-xl text-xs font-black uppercase outline-none" required>
                     </div>
 
+                    <!-- ÉTAPE 5 : Capture -->
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-slate-500 uppercase">5. Joindre la capture d'écran</label>
                         <div class="border-2 border-dashed border-slate-200 bg-slate-50 rounded-2xl p-3 text-center relative">
@@ -140,19 +209,113 @@
     </main>
 
     <script>
-        const select = document.getElementById('candidateSelect');
-        const img = document.getElementById('candidateImg');
-        const nameDisp = document.getElementById('previewName');
-        const deptDisp = document.getElementById('previewDept');
-        const voteInp = document.getElementById('voteCount');
-        const priceDisp = document.getElementById('totalPrice');
-        const ussdDisp = document.getElementById('ussdCode');
-        const captureInput = document.getElementById('capture');
-        const fileStatus = document.getElementById('fileStatus');
-        const searchInput = document.getElementById('searchCandidate');
-        const allOptions = Array.from(select.options);
+        // ══ CONFIG OPÉRATEURS
+        const OPERATEURS = {
+            mtn:  {
+                label:   'MTN Mobile Money',
+                numero:  '0161974888',
+                display: '0161 974 888',
+                color:   'amber',
+                ussd:    (montant) => `*880*46*0161974888*${montant}#`,
+                instrTransfert: (montant) => `Envoyez <strong>${montant} F CFA</strong> au numéro ci-dessus via MTN Mobile Money, puis remplissez les informations ci-dessous.`,
+                instrUssd: `Composez le code USSD ci-dessus depuis votre téléphone MTN, confirmez le paiement, puis remplissez les informations ci-dessous.`
+            },
+            moov: {
+                label:   'Moov Money',
+                numero:  '0198680864',
+                display: '0198 680 864',
+                color:   'blue',
+                ussd:    (montant) => `*855*1*1*1*0198680864*0198680864*${montant}*code_secret#`,
+                instrTransfert: (montant) => `Envoyez <strong>${montant} F CFA</strong> au numéro ci-dessus via Moov Money, puis remplissez les informations ci-dessous.`,
+                instrUssd: `Composez le code USSD ci-dessus depuis votre téléphone Moov. Remplacez <strong>code_secret</strong> par votre code PIN Moov Money.`
+            },
+            cel:  {
+                label:   'Celtiis Money',
+                numero:  '0141696418',
+                display: '0141 696 418',
+                color:   'green',
+                ussd:    (montant) => `*889*1*0141696418*${montant}*code_secret#`,
+                instrTransfert: (montant) => `Envoyez <strong>${montant} F CFA</strong> au numéro ci-dessus via Celtiis Money, puis remplissez les informations ci-dessous.`,
+                instrUssd: `Composez le code USSD ci-dessus depuis votre téléphone Celtiis. Remplacez <strong>code_secret</strong> par votre code PIN Celtiis Money.`
+            }
+        };
 
-        // Barre de recherche fluide
+        let operateurActif = 'mtn';
+        let methodeActive  = 'transfert';
+
+        const select       = document.getElementById('candidateSelect');
+        const img          = document.getElementById('candidateImg');
+        const nameDisp     = document.getElementById('previewName');
+        const deptDisp     = document.getElementById('previewDept');
+        const voteInp      = document.getElementById('voteCount');
+        const priceDisp    = document.getElementById('totalPrice');
+        const ussdDisp     = document.getElementById('ussdCode');
+        const captureInput = document.getElementById('capture');
+        const fileStatus   = document.getElementById('fileStatus');
+        const searchInput  = document.getElementById('searchCandidate');
+        const allOptions   = Array.from(select.options);
+
+        // ══ CHANGER OPÉRATEUR
+        function setOperateur(op) {
+            operateurActif = op;
+            const ops = OPERATEURS[op];
+            const montant = Math.max(1, voteInp.value) * 100;
+
+            // Reset tabs
+            ['mtn','moov','cel'].forEach(o => {
+                const tab = document.getElementById(`tab-${o}`);
+                tab.className = 'op-tab border-2 border-slate-200 rounded-xl py-2 px-1 text-center font-black text-xs text-slate-500';
+            });
+            document.getElementById(`tab-${op}`).className = `op-tab active-${op} border-2 rounded-xl py-2 px-1 text-center font-black text-xs`;
+
+            // Mettre à jour affichages
+            document.getElementById('operateur-label').innerText  = ops.label;
+            document.getElementById('numero-affiche').innerText   = ops.display;
+            document.getElementById('instructions-transfert').innerHTML = ops.instrTransfert(montant);
+            document.getElementById('instructions-ussd').innerHTML = ops.instrUssd;
+            ussdDisp.innerText = ops.ussd(montant);
+        }
+
+        // ══ CHANGER MÉTHODE
+        function setMethode(methode) {
+            methodeActive = methode;
+            ['transfert','ussd'].forEach(m => {
+                document.getElementById(`method-${m}`).className = 'method-tab border-2 border-slate-200 rounded-xl py-2 text-xs font-black text-slate-500';
+            });
+            document.getElementById(`method-${methode}`).className = 'method-tab active border-2 border-slate-800 bg-slate-800 text-jef-gold rounded-xl py-2 text-xs font-black';
+            document.getElementById('bloc-transfert').classList.toggle('hidden', methode !== 'transfert');
+            document.getElementById('bloc-ussd').classList.toggle('hidden', methode !== 'ussd');
+        }
+
+        // ══ COPIER NUMÉRO
+        function copierNumero() {
+            const numero = OPERATEURS[operateurActif].numero;
+            navigator.clipboard.writeText(numero);
+            const el = document.getElementById('numero-affiche');
+            el.innerText = '✅ Copié !';
+            setTimeout(() => { el.innerText = OPERATEURS[operateurActif].display; }, 1500);
+        }
+
+        // ══ COPIER USSD
+        function copyUSSD() {
+            navigator.clipboard.writeText(ussdDisp.innerText);
+            const el = ussdDisp;
+            const original = el.innerText;
+            el.innerText = '✅ Copié !';
+            setTimeout(() => { el.innerText = original; }, 1500);
+        }
+
+        // ══ MISE À JOUR MONTANT
+        voteInp.addEventListener('input', () => {
+            const amount = Math.max(1, voteInp.value) * 100;
+            priceDisp.innerText = amount;
+            const ops = OPERATEURS[operateurActif];
+            ussdDisp.innerText = ops.ussd(amount);
+            document.getElementById('instructions-transfert').innerHTML = ops.instrTransfert(amount);
+            document.getElementById('montant-transfert') && (document.getElementById('montant-transfert').innerText = amount + ' F CFA');
+        });
+
+        // ══ RECHERCHE CANDIDATE
         searchInput.addEventListener('input', (e) => {
             const filterText = e.target.value.toLowerCase().trim();
             select.innerHTML = '';
@@ -169,8 +332,8 @@
 
         select.addEventListener('change', () => {
             const opt = select.options[select.selectedIndex];
-            if(select.value) {
-                img.src = `/candidates/candidate${select.value}.jpg`; 
+            if (select.value) {
+                img.src = `/candidates/candidate${select.value}.jpg`;
                 nameDisp.innerText = opt.getAttribute('data-name');
                 deptDisp.innerText = opt.getAttribute('data-dept');
             } else {
@@ -181,33 +344,21 @@
         });
 
         captureInput.addEventListener('change', (e) => {
-            if(e.target.files.length > 0) fileStatus.innerText = "✅ Image chargée";
+            if (e.target.files.length > 0) fileStatus.innerText = "✅ Image chargée";
         });
 
-        voteInp.addEventListener('input', () => {
-            const amount = Math.max(1, voteInp.value) * 100;
-            priceDisp.innerText = amount;
-            ussdDisp.innerText = `*880*46*0191225602*${amount}#`;
-        });
-
-        function copyUSSD() {
-            navigator.clipboard.writeText(ussdDisp.innerText);
-            alert("Code USSD copié !");
-        }
-
+        // ══ CLASSEMENT
         async function updateRanking() {
             try {
-                const res = await fetch('https://miss-fllac-backend.onrender.com/api/ranking');
+                const res  = await fetch('https://miss-fllac-backend.onrender.com/api/ranking');
                 const data = await res.json();
                 const container = document.getElementById('rankingList');
                 container.innerHTML = '';
                 const sorted = Object.entries(data).sort((a, b) => b[1] - a[1]);
-
                 if (sorted.length === 0) {
                     container.innerHTML = '<p class="text-slate-500 text-center text-xs py-8">Aucun vote validé</p>';
                     return;
                 }
-
                 sorted.forEach(([name, count], index) => {
                     const item = document.createElement('div');
                     item.className = `flex items-center justify-between p-3 rounded-xl bg-slate-900 border ${index === 0 ? 'border-amber-500' : 'border-slate-800'}`;
@@ -223,22 +374,23 @@
             } catch (e) {}
         }
 
+        // ══ SOUMISSION
         document.getElementById('voteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerText = "ENVOI EN COURS...";
 
             const formData = new FormData();
-            formData.append('candidate', select.options[select.selectedIndex].getAttribute('data-name'));
-            formData.append('voteCount', voteInp.value);
-            formData.append('senderName', document.getElementById('senderName').value);
+            formData.append('candidate',   select.options[select.selectedIndex].getAttribute('data-name'));
+            formData.append('voteCount',   voteInp.value);
+            formData.append('senderName',  document.getElementById('senderName').value);
             formData.append('senderPhone', document.getElementById('senderPhone').value);
-            formData.append('txRef', document.getElementById('txRef').value.toUpperCase().trim());
-            formData.append('capture', captureInput.files[0]);
+            formData.append('txRef',       document.getElementById('txRef').value.toUpperCase().trim());
+            formData.append('capture',     captureInput.files[0]);
 
             try {
                 const response = await fetch('https://miss-fllac-backend.onrender.com/api/voter', { method: 'POST', body: formData });
-                if(response.ok) {
+                if (response.ok) {
                     alert("✅ Vote transmis ! En attente de validation par le gestionnaire.");
                     location.reload();
                 } else {
