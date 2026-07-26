@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement - MISS FLLAC 2026</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #080c14;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .container { max-width: 560px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            color: #f39c12;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+        .sous-titre {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .rang {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+        }
+        .rang.premier { border-color: rgba(243,156,18,0.4); box-shadow: 0 0 0 1px rgba(243,156,18,0.15); }
+        .position { color: #f39c12; font-weight: 900; font-size: 14px; width: 32px; }
+        .nom { flex: 1; margin-left: 10px; font-weight: 700; font-size: 13px; text-transform: uppercase; }
+        .votes { color: #9ca3af; font-size: 12px; font-weight: 700; }
+        .chargement, .erreur { text-align: center; color: #64748b; font-size: 13px; padding: 40px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>👑 Classement</h1>
+        <p class="sous-titre">MISS FLLAC 2026 — Votes validés</p>
+        <div id="classementList">
+            <p class="chargement">Chargement du classement...</p>
+        </div>
+    </div>
+
+    <script>
+        const BACKEND_URL = "https://miss-fllac-backend.onrender.com";
+
+        async function chargerClassement() {
+            const container = document.getElementById('classementList');
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/ranking`);
+                const data = await res.json();
+
+                const classement = Object.entries(data)
+                    .map(([nom, votes]) => ({ nom, votes }))
+                    .sort((a, b) => b.votes - a.votes);
+
+                if (!classement.length) {
+                    container.innerHTML = `<p class="erreur">Aucun vote validé pour le moment.</p>`;
+                    return;
+                }
+
+                container.innerHTML = classement.map((c, i) => `
+                    <div class="rang ${i === 0 ? 'premier' : ''}">
+                        <span class="position">#${i + 1}</span>
+                        <span class="nom">${c.nom}</span>
+                        <span class="votes">${c.votes} votes</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = `<p class="erreur">Impossible de charger le classement pour le moment.</p>`;
+            }
+        }
+
+        chargerClassement();
+        setInterval(chargerClassement, 10000); // rafraîchit toutes les 10s
+    </script>
+
+</body>
+</html>
