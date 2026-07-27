@@ -6,7 +6,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Votes clôturés - MISS FLLAC 2026</title>
+    <title>Résultats - MISS FLLAC 2026</title>
     <style>
         body {
             margin: 0; padding: 0;
@@ -15,49 +15,71 @@
             color: #ffffff;
             display: flex;
             justify-content: center;
-            align-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
-            max-width: 600px;
+            max-width: 620px;
             padding: 40px;
             background: #111827;
             border: 1px solid #1f2937;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            margin: 20px;
         }
-        .icon { font-size: 64px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .icon { font-size: 60px; margin-bottom: 16px; animation: pulse 2s infinite; }
         h1 {
-            font-size: 24px; color: #f39c12; margin-bottom: 20px;
+            font-size: 24px; color: #f39c12; margin-bottom: 10px;
             text-transform: uppercase; letter-spacing: 1px;
         }
-        p { font-size: 16px; line-height: 1.6; color: #9ca3af; margin-bottom: 30px; }
-        .badge {
-            background-color: rgba(243, 156, 18, 0.1);
+        .sous-titre {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+        .podium {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .rang {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #0b0f19;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: left;
+        }
+        .rang.miss {
+            border-color: rgba(243,156,18,0.5);
+            box-shadow: 0 0 0 1px rgba(243,156,18,0.2);
+            background: rgba(243,156,18,0.06);
+        }
+        .medaille { font-size: 28px; line-height: 1; }
+        .titre-rang {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             color: #f39c12;
-            padding: 8px 16px;
-            border-radius: 50px;
             font-weight: bold;
-            font-size: 14px;
-            display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 2px;
         }
-        .btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 12px 28px;
-            background-color: #f39c12;
-            color: #0b0f19;
-            font-weight: bold;
-            text-decoration: none;
-            border-radius: 50px;
-            font-size: 14px;
-            transition: transform 0.2s ease;
+        .nom-rang {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
         }
-        .btn:hover { transform: scale(1.05); }
+        p.merci {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #9ca3af;
+            margin: 0;
+        }
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -69,15 +91,38 @@
 
     <div class="container">
         <div class="icon">👑</div>
-        <h1>Les votes sont clôturés</h1>
-        <p>
-            La phase de vote en ligne pour MISS FLLAC 2026 est officiellement terminée. 
-            La Grande Finale se déroule aujourd'hui à Casa Del Chief, Pavé SOS Calavi, 
-            où les candidates s'affrontent en direct devant le public et le jury.
+        <h1>Résultats — MISS FLLAC 2026</h1>
+        <p class="sous-titre">La Grande Finale est terminée !</p>
+
+        <div class="podium">
+            <div class="rang miss">
+                <span class="medaille">👑</span>
+                <div>
+                    <div class="titre-rang">Miss FLLAC 2026</div>
+                    <div class="nom-rang">SOTON Odette</div>
+                </div>
+            </div>
+            <div class="rang">
+                <span class="medaille">🥈</span>
+                <div>
+                    <div class="titre-rang">1ère Dauphine</div>
+                    <div class="nom-rang">ADJAÏ Bénédicte</div>
+                </div>
+            </div>
+            <div class="rang">
+                <span class="medaille">🥉</span>
+                <div>
+                    <div class="titre-rang">2ème Dauphine</div>
+                    <div class="nom-rang">ALIASSIM Fridos</div>
+                </div>
+            </div>
+        </div>
+
+        <p class="merci">
+            🎉 Toutes nos félicitations à nos lauréates ! Un immense merci à toutes les candidates, 
+            au public, aux votants et à toute l'équipe organisatrice pour cette belle édition. 
+            Rendez-vous l'année prochaine ! 🏆
         </p>
-        <div class="badge">🎉 Résultats annoncés en direct ce soir • Merci à tous les votants ! 🏆</div>
-        <br>
-        <a href="/resultats.html" class="btn">📊 Voir les différents votes</a>
     </div>
 
 </body>
